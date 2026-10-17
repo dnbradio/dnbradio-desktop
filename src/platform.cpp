@@ -147,6 +147,17 @@ void Platform::positionMiniPlayer(QWindow *window) {
         screen->availableGeometry().adjusted(8, 8, -8, -8), window->size()));
 }
 
+void Platform::fitWindowToScreen(QWindow *window) {
+    if (!window || !window->screen()) return;
+    const auto available = window->screen()->availableGeometry()
+        .marginsRemoved(window->frameMargins()).adjusted(12, 12, -12, -12);
+    if (available.isEmpty()) return;
+    const auto size = window->size().boundedTo(available.size());
+    window->setGeometry(QRect(QPoint(
+        qBound(available.left(), window->x(), available.right() - size.width() + 1),
+        qBound(available.top(), window->y(), available.bottom() - size.height() + 1)), size));
+}
+
 void Platform::presentMiniPlayer(QWindow *window) {
     if (!window) return;
     if (window->isVisible()) {

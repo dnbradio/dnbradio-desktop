@@ -51,6 +51,38 @@ def loaded_modules(pid):
         kernel.CloseHandle(process)
 
 
+def check_window_bounds(pid):
+    user32 = ctypes.WinDLL("user32", use_last_error=True)
+    user32.GetWindowThreadProcessId.argtypes = [wintypes.HWND, ctypes.POINTER(wintypes.DWORD)]
+    user32.IsWindowVisible.argtypes = [wintypes.HWND]
+    user32.GetWindowRect.argtypes = [wintypes.HWND, ctypes.POINTER(wintypes.RECT)]
+    user32.MonitorFromWindow.argtypes = [wintypes.HWND, wintypes.DWORD]
+    user32.MonitorFromWindow.restype = wintypes.HANDLE
+    class MonitorInfo(ctypes.Structure):
+        _fields_ = [("size", wintypes.DWORD), ("monitor", wintypes.RECT),
+                    ("work", wintypes.RECT), ("flags", wintypes.DWORD)]
+    user32.GetMonitorInfoW.argtypes = [wintypes.HANDLE, ctypes.POINTER(MonitorInfo)]
+    windows = []
+    callback = ctypes.WINFUNCTYPE(wintypes.BOOL, wintypes.HWND, wintypes.LPARAM)
+    user32.EnumWindows.argtypes = [callback, wintypes.LPARAM]
+    @callback
+    def collect(window, _):
+        owner = wintypes.DWORD()
+        user32.GetWindowThreadProcessId(window, ctypes.byref(owner))
+        if owner.value == pid and user32.IsWindowVisible(window):
+            windows.append(window)
+        return True
+    assert user32.EnumWindows(collect, 0) and windows, "No visible player window"
+    for window in windows:
+        bounds = wintypes.RECT()
+        info = MonitorInfo()
+        info.size = ctypes.sizeof(info)
+        assert user32.GetWindowRect(window, ctypes.byref(bounds))
+        assert user32.GetMonitorInfoW(user32.MonitorFromWindow(window, 2), ctypes.byref(info))
+        assert (bounds.left >= info.work.left and bounds.top >= info.work.top
+                and bounds.right <= info.work.right and bounds.bottom <= info.work.bottom), "Player extends behind taskbar/off screen"
+
+
 def main():
     archive, qa = Path(sys.argv[1]).resolve(), Path(sys.argv[2]).resolve()
     env = {k: v for k, v in os.environ.items() if not k.upper().startswith(("QT", "QML", "DNBRADIO"))}
@@ -102,6 +134,7 @@ def main():
                     assert all(p.is_relative_to(app_dir) for p in qt_modules), "Loaded Qt from outside ZIP"
                     for name in ("vcruntime140.dll", "msvcp140.dll", "qwindows.dll", "qsvgicon.dll"):
                         assert any(p.name.lower() == name and p.is_relative_to(app_dir) for p in modules), f"Unbundled {name}"
+                    check_window_bounds(process.pid)
                     screenshot = str(evidence / "windows-desktop.png").replace("'", "''")
                     subprocess.run(["powershell.exe", "-NoProfile", "-Command",
                         "Add-Type -AssemblyName System.Windows.Forms; Add-Type -AssemblyName System.Drawing; "

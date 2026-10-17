@@ -83,7 +83,7 @@ def main():
     archive = Path(shutil.make_archive(str(args.output / f"dnbradio-{version}-windows-x86_64"),
                                       "zip", stage.parent, stage.name))
     digest = hashlib.sha256(archive.read_bytes()).hexdigest()
-    (args.output / "SHA256SUMS-windows").write_text(f"{digest}  {archive.name}\n", encoding="utf-8")
+    (args.output / "SHA256SUMS-windows").write_bytes(f"{digest}  {archive.name}\n".encode("ascii"))
     print(f"Packaged {archive} (SHA-256 {digest}); QA bundle: {qa}")
 
 

@@ -32,7 +32,10 @@ Controls.ApplicationWindow {
       root.hide();
     } else { radio.shutdown(); Qt.quit(); }
   }
-  Component.onCompleted: radio.library.open("home")
+  Component.onCompleted: {
+    radio.library.open("home");
+    Qt.callLater(function() { Platform.fitWindowToScreen(root); });
+  }
   Connections {
     target: Platform
     function onShowRequested() { miniPanel.hide(); root.showNormal(); root.raise(); root.requestActivate(); }

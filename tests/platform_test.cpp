@@ -4,6 +4,7 @@
 #include <QTest>
 #include <QMenu>
 #include <QSignalSpy>
+#include <QScreen>
 
 class PlatformTest : public QObject {
     Q_OBJECT
@@ -48,6 +49,16 @@ private slots:
         QVERIFY(available.contains(fromSide));
         const QRect smallScreen(0, 0, 320, 240);
         QVERIFY(smallScreen.contains(Platform::miniPlayerGeometry(QRect(310, 230, 1, 1), smallScreen, QSize(440, 580))));
+    }
+
+    void initialWindowStaysOnScreen() {
+        Platform platform;
+        QWindow window;
+        window.setGeometry(100, 100, 1100, 850);
+        window.show();
+        QCoreApplication::processEvents();
+        platform.fitWindowToScreen(&window);
+        QVERIFY(window.screen()->availableGeometry().contains(window.frameGeometry()));
     }
 
     void persistenceAndCorruption() {
