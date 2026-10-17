@@ -165,6 +165,7 @@ def main():
                 (evidence / "live-stream.log").write_text(output, encoding="utf-8")
                 print(output, flush=True)
                 assert result.returncode == 0 and output.count("PASS: live HTTPS radio") == 2, "Live MP3/AAC failed"
+                assert output.count("PASS: live HTTPS restart") == 2 and "PASS: live pause and source change" in output, "Live restart failed"
                 assert not re.search(errors, output), "Live QML error"
             if "--recording" in sys.argv[3:]:
                 result = subprocess.run([str(qa / "dnbradio.exe"), "--test-qml", str(root / "tests/recording-stream.qml")],

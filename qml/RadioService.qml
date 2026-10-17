@@ -90,7 +90,12 @@ Item {
     wantsPlay = false;
     connectionTimeout.stop();
     if (mode === "archive") player.pause();
-    else player.stop();
+    else {
+      player.stop();
+      // Live playback must reopen at the live edge. AVFoundation can wait forever
+      // after stop() seeks an existing non-seekable stream back to zero.
+      player.source = "";
+    }
   }
   function toggle() { if (wantsPlay) pause(); else play(); }
   function failPlayback(message) {
