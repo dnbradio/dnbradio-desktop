@@ -1,8 +1,12 @@
-# 0.2.0 private preview
+# 0.2.1 private preview
 
-This release adds the shared tray mini player on Linux and macOS, readable dark
-dropdowns, and the supplied DNBRADIO logo for desktop and menu-bar icons.
-The optional Omarchy plugin remains version 0.4.0.
+This release fixes Play-after-error for recorded mixes, preserving the mix and
+resume position while reopening the failed backend. It also fixes live
+Pause/Play recovery on macOS by opening a fresh live connection.
+
+My Library now has explicit Save and Remove controls, and a prominent Back to live
+button sits beside Play/Pause in both the full and mini players. The optional
+Omarchy plugin remains version 0.4.0.
 
 ## Release scope
 
@@ -33,13 +37,17 @@ Without a tray it quits. If the panel disappears, the full window reopens.
   and minimum-OS audit, production test-loader exclusion, and strict signature checks.
 - Windows extracted-ZIP startup, DLL origin checks without Qt on PATH, production
   test-loader exclusion, matching QA/runtime DLLs, UI/audio fixtures, tray controls,
-  and live HTTPS MP3/AAC playback. A desktop screenshot and logs are retained in CI.
+  and live HTTPS MP3/AAC startup and Pause/Play recovery. A desktop screenshot and
+  logs are retained in CI.
 
 Linux desktop interaction tests use Xvfb, Openbox, and trayer. Exact Mint/Cinnamon
-and Wayland desktop behavior still needs tester feedback. The macOS build host's
-locked desktop prevents native focus-loss validation; its QML controls and native
-status-item activation are exercised. The earlier macOS build was also tested by
-the owner on Apple Silicon.
+and Wayland desktop behavior still needs tester feedback. Native macOS focus-loss
+validation remains limited; QML controls and native status-item activation were
+exercised. The owner tested the updated candidate on an M2 Air with macOS 26.5.2
+and reported that it now seems fine. Automated tests on that Air reproduced the live restart
+hang before the fix and passed afterward for MP3 and AAC. The separately reported
+320K startup skipping was not reproduced in muted traces; no prebuffering setting
+was changed, and its exact cause remains unconfirmed.
 
 ## Private release procedure
 
@@ -51,9 +59,9 @@ the owner on Apple Silicon.
    separate test-enabled executable with the same bundled frameworks.
 4. Download the Windows ZIP from the matching successful CI head and verify
    `SHA256SUMS-windows`. Its `BUILD-INFO.json` records the source commit and runtime
-   versions. Windows was added after the original 0.2.0 release; retain the original
-   tag and identify the Windows build's commit in release notes.
-5. Create or update the private GitHub prerelease with the platform packages,
+   versions. Require the ZIP source commit to match the release tag. Preserve all
+   older tags and published assets.
+5. Create a new private GitHub prerelease with the platform packages,
    checksum files, and optional assembled Omarchy plugin. Keep public hosting disabled.
 6. Follow the README installation steps and record tester feedback.
 
