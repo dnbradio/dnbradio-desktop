@@ -111,6 +111,6 @@ Run the installer in your unlocked Omarchy desktop session. It backs up the inst
 
 ## Validation and releases
 
-CI builds on Linux, Windows, and macOS, runs storage and data tests, exercises the native Linux UI with local API/audio fixtures on X11, and creates private Flatpak and Windows ZIP artifacts. The Windows job checks an extracted ZIP with Qt removed from PATH, verifies bundled DLLs, and exercises the UI, audio, tray mini player, and live HTTPS MP3/AAC playback. Tests use isolated data directories and do not control installed players. The test-QML loader is compiled only when `BUILD_TESTING` is enabled; release bundles disable it.
+CI builds on Linux, Windows, and macOS, runs storage and data tests, exercises the native Linux UI with local API/audio fixtures on X11, and creates private Flatpak and Windows ZIP artifacts. The Windows job checks an extracted ZIP with Qt removed from PATH, verifies bundled DLLs, and exercises the UI, audio, tray mini player, and live HTTPS MP3/AAC startup and Pause/Play recovery. The macOS job also checks live startup and recovery with AVFoundation. Tests use isolated data directories and do not control installed players. The test-QML loader is compiled only when `BUILD_TESTING` is enabled; release bundles disable it.
 
 Platform validation, private release steps, and known limitations are recorded in [release notes](docs/RELEASE.md). Source provenance is in [PROVENANCE.md](docs/PROVENANCE.md).
