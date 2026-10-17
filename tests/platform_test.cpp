@@ -54,6 +54,7 @@ private slots:
     void initialWindowStaysOnScreen() {
         Platform platform;
         QWindow window;
+        window.setMinimumSize(QSize(1100, 850));
         window.setGeometry(100, 100, 1100, 850);
         window.show();
         QCoreApplication::processEvents();

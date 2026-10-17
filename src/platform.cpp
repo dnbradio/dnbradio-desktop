@@ -153,6 +153,7 @@ void Platform::fitWindowToScreen(QWindow *window) {
         .marginsRemoved(window->frameMargins()).adjusted(12, 12, -12, -12);
     if (available.isEmpty()) return;
     const auto size = window->size().boundedTo(available.size());
+    window->setMinimumSize(window->minimumSize().boundedTo(available.size()));
     window->setGeometry(QRect(QPoint(
         qBound(available.left(), window->x(), available.right() - size.width() + 1),
         qBound(available.top(), window->y(), available.bottom() - size.height() + 1)), size));
