@@ -40,7 +40,7 @@ try:
                    QT_FORCE_STDERR_LOGGING="1")
         env.setdefault("QT_QPA_PLATFORM", {"darwin": "cocoa", "win32": "windows"}.get(sys.platform, "offscreen"))
         result = subprocess.run([sys.argv[1], "--test-qml", str(Path(__file__).with_suffix(".qml").resolve())],
-                                env=env, capture_output=True, text=True, timeout=100)
+                                env=env, capture_output=True, text=True, encoding="utf-8", errors="replace", timeout=100)
         output = result.stdout + result.stderr
         print(output, flush=True)
         assert result.returncode == 0 and "PASS: playback retry" in output, "Playback retry failed"
