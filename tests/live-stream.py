@@ -8,7 +8,7 @@ import sys
 import tempfile
 
 with tempfile.TemporaryDirectory(prefix="dnbradio-live-") as state:
-    env = dict(os.environ, DNBRADIO_DATA_DIR=state)
+    env = dict(os.environ, DNBRADIO_DATA_DIR=state, QT_FORCE_STDERR_LOGGING="1")
     result = subprocess.run([sys.argv[1], "--test-qml", str(Path(__file__).with_suffix(".qml").resolve())],
                             env=env, capture_output=True, text=True, timeout=100)
     output = result.stdout + result.stderr
