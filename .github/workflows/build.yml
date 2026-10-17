@@ -1,0 +1,56 @@
+name: Build and test
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: build-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  native:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-24.04, windows-2022, macos-14]
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+      - uses: jurplel/install-qt-action@a9c63c7c123f3069cff414e7e482d95dfa9d8125
+        with:
+          version: '6.10.*'
+          modules: qtmultimedia qtshadertools qtimageformats
+          cache: true
+      - name: Configure
+        run: cmake -S . -B build -DCMAKE_BUILD_TYPE=Release
+      - name: Build
+        run: cmake --build build --config Release --parallel 2
+      - name: Storage tests
+        run: ctest --test-dir build -C Release --output-on-failure
+      - name: Shared data tests
+        run: node --test tests/data.test.cjs
+      - name: Native UI and audio smoke (X11)
+        if: runner.os == 'Linux'
+        run: QT_QPA_PLATFORM=xcb xvfb-run -a python3 tests/smoke.py build/dnbradio
+      - name: Verify optional Omarchy package
+        if: runner.os == 'Linux'
+        run: |
+          python3 scripts/package-omarchy.py build/omarchy
+          node --test build/omarchy/tests/data.test.cjs
+  flatpak:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 35
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+      - name: Install builder
+        run: sudo apt-get update && sudo apt-get install -y flatpak-builder
+      - name: Build private testing bundle
+        run: bash scripts/build-flatpak.sh
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: dnbradio-linux-x86_64
+          path: dist/
+          if-no-files-found: error
+          retention-days: 14

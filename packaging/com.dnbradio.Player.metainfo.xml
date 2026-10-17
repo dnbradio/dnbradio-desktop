@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<component type="desktop-application">
+  <id>com.dnbradio.Player</id>
+  <name>DNBRADIO</name>
+  <summary>Independent drum and bass radio, mixes, and shows</summary>
+  <metadata_license>CC0-1.0</metadata_license>
+  <project_license>LicenseRef-proprietary</project_license>
+  <description><p>Listen to live radio, explore recorded mixes and DJ profiles, follow the show schedule, and save your favorite sessions.</p></description>
+  <launchable type="desktop-id">com.dnbradio.Player.desktop</launchable>
+  <url type="homepage">https://dnbradio.com</url>
+  <content_rating type="oars-1.1"/>
+  <releases><release version="0.1.0" date="2026-10-17"/></releases>
+</component>

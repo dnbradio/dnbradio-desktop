@@ -22,3 +22,8 @@ __pycache__/
 *.py[cod]
 build/
 dist/
+
+# Qt and Flatpak tooling
+.qmlls.ini
+.flatpak-builder/
+CMakeUserPresets.json
