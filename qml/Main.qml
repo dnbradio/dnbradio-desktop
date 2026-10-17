@@ -27,12 +27,15 @@ Controls.ApplicationWindow {
   font.family: Style.font.family
   font.pixelSize: Style.font.body
   onClosing: function(close) {
-    if ((Qt.platform.os === "osx" || Qt.platform.os === "linux") && Platform.trayAvailable) {
+    if (Platform.trayAvailable) {
       close.accepted = false;
       root.hide();
     } else { radio.shutdown(); Qt.quit(); }
   }
-  Component.onCompleted: radio.library.open("home")
+  Component.onCompleted: {
+    radio.library.open("home");
+    Qt.callLater(function() { Platform.fitWindowToScreen(root); });
+  }
   Connections {
     target: Platform
     function onShowRequested() { miniPanel.hide(); root.showNormal(); root.raise(); root.requestActivate(); }

@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Exercise the Linux/macOS tray lifecycle and both windows with native Qt input."""
+"""Exercise the desktop tray lifecycle and both windows with native Qt input."""
 import configparser
 import os
 from pathlib import Path
@@ -19,7 +19,7 @@ try:
     with tempfile.TemporaryDirectory(prefix="dnbradio-menu-bar-") as state:
         env = dict(os.environ, DNBRADIO_DATA_DIR=state, DNBRADIO_API_BASE=base,
                    DNBRADIO_NOWPLAYING_URL=base + "/nowplaying", DNBRADIO_BASSDRIVE_URL=base + "/bassdrive")
-        env.setdefault("QT_QPA_PLATFORM", "cocoa" if sys.platform == "darwin" else "xcb")
+        env.setdefault("QT_QPA_PLATFORM", {"darwin": "cocoa", "win32": "windows"}.get(sys.platform, "xcb"))
         harness = str(Path(__file__).with_suffix(".qml").resolve())
         if sys.platform == "darwin":
             log = Path(state) / "output.log"

@@ -2,7 +2,7 @@
 
 A standalone Qt desktop player for [DNBRADIO](https://dnbradio.com), with an optional Omarchy plugin.
 
-**Private preview, version 0.2.0.** Linux x86_64 Flatpak and an Apple Silicon macOS ZIP are available. Windows remains a development build target. The repository and releases remain private until the owner explicitly authorizes public distribution.
+**Private preview, version 0.2.0.** Linux x86_64 Flatpak, Apple Silicon macOS ZIP, and Windows x86_64 portable ZIP packages are available. The repository and releases remain private until the owner explicitly authorizes public distribution.
 
 ## Install on Linux Mint 22.3 (Cinnamon / X11)
 
@@ -16,13 +16,27 @@ flatpak run com.dnbradio.Player
 
 The bundle includes the application and uses the KDE Qt runtime from Flathub. Your desktop stays Cinnamon. The app does not require Omarchy, Hyprland, or Quickshell. Linux builds support both X11 and Wayland through Qt. Mint 22.3 Cinnamon/X11 is the initial tester target; Ubuntu LTS, Fedora, and Arch are further validation targets.
 
-No playback starts automatically. Choose a station and press Play, or open a recorded mix. On Linux and macOS, click the tray/menu-bar icon to open the mini player. It shares playback, stations, quality, volume, recent mixes, and navigation with the full window. On Linux, right-click also offers Mini player, Open player, and Quit. Closing the full window keeps playback running when a tray is available; use Quit to exit and save. Without a tray, closing the window quits. If the desktop panel disappears, the full window reopens. Panel placement on Wayland is controlled by the compositor. Reminders are checked while the application is running and also appear inside the window.
+No playback starts automatically. Choose a station and press Play, or open a recorded mix. On Linux, Windows, and macOS, click the tray/menu-bar icon to open the mini player. It shares playback, stations, quality, volume, recent mixes, and navigation with the full window. On Linux and Windows, right-click also offers Mini player, Open player, and Quit. Closing the full window keeps playback running when a tray is available; use Quit to exit and save. Without a tray, closing the window quits. If the desktop panel disappears, the full window reopens. Panel placement on Wayland is controlled by the compositor. Reminders are checked while the application is running and also appear inside the window.
 
 ## Install on Apple Silicon macOS
 
 Download `dnbradio-0.2.0-macos-arm64.zip`, extract it outside cloud-sync folders, and move `DNBRADIO.app` to Applications. This private preview targets macOS 26 or later and is ad hoc signed, not notarized. If macOS blocks the first launch, use System Settings → Privacy & Security → Open Anyway for this downloaded app.
 
 Click the menu-bar logo for the mini player. Closing the full window keeps playback running; choose Quit to exit. No playback starts automatically.
+
+## Install on Windows
+
+Download `dnbradio-0.2.0-windows-x86_64.zip`, extract the entire ZIP, and run
+`DNBRADIO/dnbradio.exe`. Requires 64-bit Windows 10 (1809+) or Windows 11.
+Qt, audio codecs, and the Visual C++ runtime are included. Keep the executable
+with its DLLs and folders. No installation or administrator access is required.
+This private preview is unsigned, so Windows may show an unknown publisher warning.
+
+Click the notification-area logo for the mini player, or right-click for
+Mini player, Open player, and Quit. Look in Windows' hidden-icons menu if needed.
+Closing the full window keeps playback running. Use Quit to exit before updating.
+Your library and settings live in `%LOCALAPPDATA%/DNBRADIO/DNBRADIO`, outside the
+extracted folder. Native Windows ARM64 and 32-bit packages are not included.
 
 ## Features
 
@@ -58,7 +72,21 @@ To build the Linux bundle on an x86_64 Linux machine with Flatpak Builder:
 bash scripts/build-flatpak.sh
 ```
 
-The supplied DNBRADIO logo lives in `packaging/menu-bar.svg`. Run `python3 scripts/generate-icons.py` to regenerate the launcher SVG and, on macOS with ImageMagick installed, the Dock/Finder `.icns`. Normal builds use the generated assets and do not require ImageMagick.
+On Windows with MSVC 2022 and Qt tools on PATH, create the production executable
+and portable ZIP after the test build above:
+
+```powershell
+cmake -S . -B build-release -DCMAKE_BUILD_TYPE=Release -DBUILD_TESTING=OFF
+cmake --build build-release --config Release --parallel
+python scripts/package-windows.py build-release/Release/dnbradio.exe build/Release/dnbradio.exe
+python tests/windows-package.py dist/dnbradio-0.2.0-windows-x86_64.zip build-windows-package/QA --live
+```
+
+Packaging uses fresh `build-windows-package/DNBRADIO` and `QA` directories and
+refuses to overwrite an existing bundle. The QA executable is kept outside the
+release ZIP. Omit `--live` to run only deterministic local-fixture tests.
+
+The supplied DNBRADIO logo lives in `packaging/menu-bar.svg`. Run `python3 scripts/generate-icons.py` with ImageMagick installed to regenerate the launcher SVG, Windows `.ico`, and, on macOS, the Dock/Finder `.icns`. Normal builds use the generated assets and do not require ImageMagick.
 
 ## Architecture and data
 
@@ -81,6 +109,6 @@ Run the installer in your unlocked Omarchy desktop session. It backs up the inst
 
 ## Validation and releases
 
-CI builds on Linux, Windows, and macOS, runs storage and data tests, exercises the native Linux UI with local API/audio fixtures on X11, and creates a private Flatpak artifact. Tests use isolated data directories and do not control installed players. The test-QML loader is compiled only when `BUILD_TESTING` is enabled; release bundles disable it.
+CI builds on Linux, Windows, and macOS, runs storage and data tests, exercises the native Linux UI with local API/audio fixtures on X11, and creates private Flatpak and Windows ZIP artifacts. The Windows job checks an extracted ZIP with Qt removed from PATH, verifies bundled DLLs, and exercises the UI, audio, tray mini player, and live HTTPS MP3/AAC playback. Tests use isolated data directories and do not control installed players. The test-QML loader is compiled only when `BUILD_TESTING` is enabled; release bundles disable it.
 
 Platform validation, private release steps, and known limitations are recorded in [release notes](docs/RELEASE.md). Source provenance is in [PROVENANCE.md](docs/PROVENANCE.md).

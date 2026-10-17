@@ -95,9 +95,7 @@ void Platform::setupTray() {
 #ifndef Q_OS_MACOS
     auto *menu = new QMenu;
     connect(m_tray, &QObject::destroyed, menu, &QObject::deleteLater);
-#ifdef Q_OS_LINUX
     menu->addAction("Mini player", this, &Platform::miniPlayerRequested);
-#endif
     menu->addAction("Open player", this, &Platform::showRequested);
     menu->addAction("Quit", this, &Platform::quitRequested);
     m_tray->setContextMenu(menu);
@@ -106,15 +104,12 @@ void Platform::setupTray() {
 #ifdef Q_OS_MACOS
         if (reason == QSystemTrayIcon::Trigger || reason == QSystemTrayIcon::Context)
             emit miniPlayerRequested();
-#elif defined(Q_OS_LINUX)
-        if (reason == QSystemTrayIcon::Trigger) emit miniPlayerRequested();
 #else
-        if (reason == QSystemTrayIcon::Trigger) emit showRequested();
+        if (reason == QSystemTrayIcon::Trigger) emit miniPlayerRequested();
 #endif
     });
     m_tray->show();
     emit trayAvailableChanged();
-#if defined(Q_OS_MACOS) || defined(Q_OS_LINUX)
     QApplication::setQuitOnLastWindowClosed(!trayAvailable());
     // A panel may start late or restart. Never strand a hidden player without its tray.
     auto *availability = new QTimer(this);
@@ -126,7 +121,6 @@ void Platform::setupTray() {
         emit trayAvailableChanged();
     });
     availability->start(2000);
-#endif
 }
 
 bool Platform::trayAvailable() const {
@@ -151,6 +145,18 @@ void Platform::positionMiniPlayer(QWindow *window) {
     window->setScreen(screen);
     window->setGeometry(miniPlayerGeometry(m_miniAnchor,
         screen->availableGeometry().adjusted(8, 8, -8, -8), window->size()));
+}
+
+void Platform::fitWindowToScreen(QWindow *window) {
+    if (!window || !window->screen()) return;
+    const auto available = window->screen()->availableGeometry()
+        .marginsRemoved(window->frameMargins()).adjusted(12, 12, -12, -12);
+    if (available.isEmpty()) return;
+    const auto size = window->size().boundedTo(available.size());
+    window->setMinimumSize(window->minimumSize().boundedTo(available.size()));
+    window->setGeometry(QRect(QPoint(
+        qBound(available.left(), window->x(), available.right() - size.width() + 1),
+        qBound(available.top(), window->y(), available.bottom() - size.height() + 1)), size));
 }
 
 void Platform::presentMiniPlayer(QWindow *window) {

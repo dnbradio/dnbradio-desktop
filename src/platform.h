@@ -17,6 +17,7 @@ public:
     static QRect miniPlayerGeometry(const QRect &anchor, const QRect &available, const QSize &requested);
     Q_INVOKABLE void presentMiniPlayer(QWindow *window);
     Q_INVOKABLE void positionMiniPlayer(QWindow *window);
+    Q_INVOKABLE void fitWindowToScreen(QWindow *window);
     Q_INVOKABLE QString environment(const QString &name) const;
     Q_INVOKABLE QVariantMap loadLibrary();
     Q_INVOKABLE QString saveLibrary(const QString &text);

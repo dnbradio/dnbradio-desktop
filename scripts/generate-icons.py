@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Regenerate branded launcher assets from menu-bar.svg (the supplied DNBRADIO logo).
 
-Requires ImageMagick. On macOS, also builds the bundled .icns using iconutil.
+Requires ImageMagick for the Windows .ico. On macOS, also builds .icns using iconutil.
 """
 from pathlib import Path
 import shutil
@@ -20,10 +20,12 @@ for path in source.findall("{http://www.w3.org/2000/svg}path"):
     ET.SubElement(logo, "path", d=path.attrib["d"])
 app_svg = packaging / "com.dnbradio.Player.svg"
 app_svg.write_bytes(ET.tostring(svg) + b"\n")
+magick = shutil.which("magick")
+if not magick:
+    raise SystemExit("ImageMagick is needed to regenerate desktop icons")
+subprocess.run([magick, "-background", "none", "-density", "768", str(app_svg),
+                "-define", "icon:auto-resize=256,128,64,48,32,24,16", str(packaging / "dnbradio.ico")], check=True)
 if sys.platform == "darwin":
-    magick = shutil.which("magick")
-    if not magick:
-        raise SystemExit("ImageMagick is needed to regenerate the macOS icon")
     with tempfile.TemporaryDirectory(prefix="dnbradio-icons-") as temp:
         iconset = Path(temp) / "dnbradio.iconset"
         iconset.mkdir()
@@ -36,4 +38,4 @@ if sys.platform == "darwin":
                                 "-resize", f"{inset}x{inset}", "-gravity", "center", "-extent", f"{pixels}x{pixels}",
                                 str(iconset / f"icon_{size}x{size}{suffix}.png")], check=True)
         subprocess.run(["iconutil", "--convert", "icns", "--output", str(packaging / "dnbradio.icns"), str(iconset)], check=True)
-print("Generated launcher icon" + (" and macOS .icns" if sys.platform == "darwin" else ""))
+print("Generated launcher SVG and Windows .ico" + (" and macOS .icns" if sys.platform == "darwin" else ""))
