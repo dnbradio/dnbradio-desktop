@@ -30,7 +30,7 @@ Controls.ApplicationWindow {
     if ((Qt.platform.os === "osx" || Qt.platform.os === "linux") && Platform.trayAvailable) {
       close.accepted = false;
       root.hide();
-    } else radio.shutdown();
+    } else { radio.shutdown(); Qt.quit(); }
   }
   Component.onCompleted: radio.library.open("home")
   Connections {

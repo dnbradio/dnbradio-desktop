@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Run inside dbus-run-session -- xvfb-run -a, with openbox, trayer and xdotool installed.
+# Run inside dbus-run-session -- xvfb-run -a, with openbox, trayer, xdotool, xprop, and wmctrl installed.
 set -euo pipefail
 cd "$(dirname "$0")/.."
 player="${1:-build/dnbradio}"

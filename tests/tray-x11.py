@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Click the actual X11 tray, check positioning/dismissal and recover from panel loss.
 
-Run under Xvfb with openbox; requires trayer, xdotool, and xprop. Uses isolated app state.
+Run under Xvfb with openbox; requires trayer, xdotool, xprop, and wmctrl. Uses isolated app state.
 """
 from pathlib import Path
 import os
@@ -56,7 +56,7 @@ try:
                 wait_for(lambda: "READY: native tray" in (Path(state) / "player.log").read_text(), "App did not become ready", timeout=30)
                 wait_for(lambda: windows("^DNBRADIO$"), "Main window did not open")
                 full = windows("^DNBRADIO$")[0]
-                command("xdotool", "windowactivate", "--sync", full, "key", "--clearmodifiers", "alt+F4")
+                command("wmctrl", "-i", "-c", hex(int(full)))
                 wait_for(lambda: not windows("^DNBRADIO$"), "Main close did not hide")
                 assert app.poll() is None, "Main close quit despite tray"
                 width, height = map(int, command("xdotool", "getdisplaygeometry").split())
@@ -94,11 +94,25 @@ try:
                 tray.terminate()
                 tray.wait(timeout=5)
                 wait_for(lambda: windows("^DNBRADIO$"), "Panel loss did not restore full player")
-                command("xdotool", "windowactivate", "--sync", full, "key", "--clearmodifiers", "alt+F4")
+                command("wmctrl", "-i", "-c", hex(int(full)))
                 app.wait(timeout=10)
                 assert app.returncode == 0, "Closing without a tray must quit cleanly"
                 assert (Path(state) / "player.ini").exists(), "Close did not persist settings"
                 print("PASS: native X11 tray click, bottom placement, click-away, toggle, menu, Escape, panel-loss recovery, no-tray quit")
+                # Close immediately after losing the tray, before the availability poll.
+                tray = subprocess.Popen(["trayer", "--edge", "bottom", "--align", "right", "--widthtype", "pixel",
+                                         "--width", "40", "--height", "32"])
+                wait_for(lambda: windows("^panel$"), "Tray host did not restart")
+                app = subprocess.Popen([sys.argv[1], "--test-qml", str(Path(__file__).with_name("tray-loss.qml").resolve())],
+                                       env=env, stdout=log, stderr=log)
+                wait_for(lambda: "READY: immediate tray loss" in (Path(state) / "player.log").read_text(),
+                         "Immediate-close regression did not become ready", timeout=30)
+                tray.terminate()
+                tray.wait(timeout=5)
+                app.wait(timeout=5)
+                assert app.returncode == 0, "Closing before the availability poll must quit"
+                assert "PASS: immediate no-tray close" in (Path(state) / "player.log").read_text()
+                print("PASS: immediate no-tray close exits before the availability poll")
             except Exception:
                 log.flush()
                 print((Path(state) / "player.log").read_text())
