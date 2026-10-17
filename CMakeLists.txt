@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.21)
-project(Dnbradio VERSION 0.1.0 LANGUAGES CXX)
+project(Dnbradio VERSION 0.2.0 LANGUAGES CXX)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 find_package(Qt6 6.8 REQUIRED COMPONENTS Quick QuickControls2 Multimedia Widgets Network)
@@ -8,16 +8,26 @@ qt_standard_project_setup(REQUIRES 6.8)
 qt_add_library(player_platform STATIC src/platform.cpp src/platform.h)
 target_link_libraries(player_platform PUBLIC Qt6::Widgets Qt6::Network)
 target_include_directories(player_platform PUBLIC src)
+if(APPLE)
+    enable_language(OBJCXX)
+    target_sources(player_platform PRIVATE src/macos.mm)
+    target_link_libraries(player_platform PUBLIC "-framework AppKit")
+endif()
 
 qt_add_executable(dnbradio src/main.cpp)
 set_target_properties(dnbradio PROPERTIES WIN32_EXECUTABLE TRUE MACOSX_BUNDLE TRUE
     MACOSX_BUNDLE_GUI_IDENTIFIER com.dnbradio.Player
     MACOSX_BUNDLE_BUNDLE_VERSION ${PROJECT_VERSION}
     MACOSX_BUNDLE_SHORT_VERSION_STRING ${PROJECT_VERSION})
+if(APPLE)
+    set_source_files_properties(packaging/dnbradio.icns PROPERTIES MACOSX_PACKAGE_LOCATION Resources)
+    target_sources(dnbradio PRIVATE packaging/dnbradio.icns)
+    set_target_properties(dnbradio PROPERTIES MACOSX_BUNDLE_ICON_FILE dnbradio.icns)
+endif()
 target_compile_definitions(dnbradio PRIVATE APP_VERSION="${PROJECT_VERSION}")
 target_link_libraries(dnbradio PRIVATE player_platform Qt6::Quick Qt6::QuickControls2 Qt6::Multimedia)
 
-set(qml_files Main.qml RadioService.qml LibraryState.qml Artwork.qml MixCard.qml
+set(qml_files Main.qml MiniPlayer.qml RadioService.qml LibraryState.qml Artwork.qml MixCard.qml
     SmoothScrollView.qml Button.qml PanelSlider.qml Dropdown.qml TextField.qml Color.qml Style.qml Util.qml)
 set_source_files_properties(qml/Color.qml qml/Style.qml qml/Util.qml PROPERTIES QT_QML_SINGLETON_TYPE TRUE)
 set(qml_sources)
@@ -29,7 +39,7 @@ set_source_files_properties(qml/Data.js PROPERTIES QT_RESOURCE_ALIAS Data.js)
 set_source_files_properties(qml/Stations.js PROPERTIES QT_RESOURCE_ALIAS Stations.js)
 qt_add_qml_module(dnbradio URI DnbRadio VERSION 1.0
     QML_FILES ${qml_sources} qml/Data.js qml/Stations.js)
-qt_add_resources(dnbradio app_assets PREFIX / FILES packaging/com.dnbradio.Player.svg)
+qt_add_resources(dnbradio app_assets PREFIX / FILES packaging/com.dnbradio.Player.svg packaging/menu-bar.svg)
 
 include(GNUInstallDirs)
 install(TARGETS dnbradio BUNDLE DESTINATION . RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR})

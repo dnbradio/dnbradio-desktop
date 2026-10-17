@@ -9,6 +9,7 @@ Controls.ApplicationWindow {
   RadioService { id: radioService }
   readonly property var radio: radioService
   readonly property var library: radio.library
+  readonly property var miniPlayer: miniPanel
   objectName: "mainWindow"
   title: "DNBRADIO"
   color: Color.background
@@ -25,12 +26,28 @@ Controls.ApplicationWindow {
   palette.highlightedText: Color.background
   font.family: Style.font.family
   font.pixelSize: Style.font.body
-  onClosing: radio.shutdown()
+  onClosing: function(close) {
+    if ((Qt.platform.os === "osx" || Qt.platform.os === "linux") && Platform.trayAvailable) {
+      close.accepted = false;
+      root.hide();
+    } else { radio.shutdown(); Qt.quit(); }
+  }
   Component.onCompleted: radio.library.open("home")
   Connections {
     target: Platform
-    function onShowRequested() { root.show(); root.raise(); root.requestActivate(); }
-    function onQuitRequested() { root.close(); }
+    function onShowRequested() { miniPanel.hide(); root.showNormal(); root.raise(); root.requestActivate(); }
+    function onMiniPlayerRequested() { Platform.presentMiniPlayer(miniPanel); }
+    function onQuitRequested() { root.radio.shutdown(); Qt.quit(); }
+    function onShutdownRequested() { root.radio.shutdown(); }
+    function onTrayAvailableChanged() {
+      if (!Platform.trayAvailable && !root.visible) Platform.showRequested();
+    }
+  }
+  Shortcut { sequences: [StandardKey.Quit]; onActivated: Platform.quitRequested() }
+  MiniPlayer {
+    id: miniPanel
+    radio: root.radio
+    onNavigate: function(tab) { root.library.open(tab); Platform.showRequested(); }
   }
 
   function date(value) {
