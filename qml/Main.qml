@@ -201,7 +201,7 @@ Controls.ApplicationWindow {
       }
       RowLayout {
         Layout.fillWidth: true
-        Action { text: root.radio.wantsPlay ? "Pause" : "Play"; bordered: true; selected: root.radio.playing; onClicked: root.radio.toggle() }
+        Action { objectName: "main-play"; text: root.radio.wantsPlay ? "Pause" : "Play"; bordered: true; selected: root.radio.playing; onClicked: root.radio.toggle() }
         ColumnLayout {
           Layout.fillWidth: true; spacing: 3
           Label { Layout.fillWidth: true; text: root.radio.title; font.bold: true; maximumLineCount: 1; elide: Text.ElideRight }

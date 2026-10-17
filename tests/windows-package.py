@@ -147,7 +147,7 @@ def main():
                     process.terminate()
                     process.wait(timeout=10)
             assert not re.search(errors, log.read_text(encoding="utf-8", errors="replace")), "Production QML error"
-            for test in ("smoke", "menu-bar"):
+            for test in ("smoke", "menu-bar", "playback-retry"):
                 result = subprocess.run([sys.executable, str(root / "tests" / f"{test}.py"), str(qa / "dnbradio.exe")],
                                         env=env, capture_output=True, text=True, encoding="utf-8", errors="replace", timeout=120)
                 output = result.stdout + result.stderr
@@ -163,6 +163,17 @@ def main():
                 print(output, flush=True)
                 assert result.returncode == 0 and output.count("PASS: live HTTPS radio") == 2, "Live MP3/AAC failed"
                 assert not re.search(errors, output), "Live QML error"
+            if "--recording" in sys.argv[3:]:
+                recording_id = sys.argv[sys.argv.index("--recording") + 1]
+                assert recording_id.isdecimal(), "Recording ID must be numeric"
+                result = subprocess.run([str(qa / "dnbradio.exe"), "--test-qml", str(root / "tests/recording-stream.qml")],
+                    env=dict(env, DNBRADIO_DATA_DIR=str(work / "recording-state"), DNBRADIO_TEST_RECORDING_ID=recording_id),
+                    capture_output=True, text=True, encoding="utf-8", errors="replace", timeout=60)
+                output = result.stdout + result.stderr
+                (evidence / "recording-stream.log").write_text(output, encoding="utf-8")
+                print(output, flush=True)
+                assert result.returncode == 0 and "PASS: archive HTTPS playback/seek/resume" in output, "Archive HTTPS failed"
+                assert not re.search(errors, output), "Archive QML error"
     finally:
         server.shutdown()
     print("PASS: Windows ZIP, production test-loader exclusion, UI, audio and tray checks", flush=True)

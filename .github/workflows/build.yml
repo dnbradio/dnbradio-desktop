@@ -37,7 +37,9 @@ jobs:
         run: node --test tests/data.test.cjs
       - name: Native UI and audio smoke (X11)
         if: runner.os == 'Linux'
-        run: QT_QPA_PLATFORM=xcb xvfb-run -a python3 tests/smoke.py build/dnbradio
+        run: |
+          QT_QPA_PLATFORM=xcb xvfb-run -a python3 tests/smoke.py build/dnbradio
+          QT_QPA_PLATFORM=xcb xvfb-run -a python3 tests/playback-retry.py build/dnbradio
       - name: Linux tray mini player (X11)
         if: runner.os == 'Linux'
         run: |
@@ -63,7 +65,7 @@ jobs:
           PYTHONUTF8: '1'
         run: |
           $archive = (Get-ChildItem dist/dnbradio-*-windows-x86_64.zip).FullName
-          python tests/windows-package.py $archive build-windows-package/QA --live
+          python tests/windows-package.py $archive build-windows-package/QA --live --recording 58084
       - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
         if: runner.os == 'Windows' && always()
         with:
