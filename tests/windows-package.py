@@ -63,7 +63,8 @@ def main():
     threading.Thread(target=server.serve_forever, daemon=True).start()
     try:
         with tempfile.TemporaryDirectory(prefix="DNBRADIO Windows ZIP ") as temp:
-            work = Path(temp)
+            # TEMP can use RUNNER~1 while Windows reports DLLs under runneradmin.
+            work = Path(temp).resolve()
             with zipfile.ZipFile(archive) as package:
                 assert package.testzip() is None, "Corrupt ZIP"
                 package.extractall(work)
