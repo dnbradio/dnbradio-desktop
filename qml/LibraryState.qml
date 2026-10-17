@@ -43,6 +43,7 @@ Item {
   property string supportError: ""
   property var favorites: []
   property var recent: []
+  property string removedCurrentMix: ""
   property var reminders: []
   property var notified: []
   property bool storageReady: false
@@ -205,7 +206,7 @@ Item {
   function rememberPosition() {
     if (!storageReady || radio.mode !== "archive" || radio.position < 1000) return;
     var rec = Data.recording(radio.recording);
-    if (!rec) return;
+    if (!rec || rec.id === removedCurrentMix) return;
     var position = radio.duration > 0 && radio.duration - radio.position < 15000 ? 0 : radio.position;
     recent = [{record: rec, position: position, updatedAt: Date.now()}].concat(recent.filter(function(r) { return r.record.id !== rec.id; })).slice(0, 100);
     save();
@@ -213,6 +214,13 @@ Item {
   function resumePosition(record) {
     var found = recent.find(function(r) { return r.record.id === record.id; });
     return found ? Number(found.position || 0) : 0;
+  }
+  function removeRecent(record) {
+    if (!storageReady) return;
+    // Periodic saves, Pause and Quit must not immediately re-add a removed row.
+    if (radio.mode === "archive" && radio.recording.id === record.id) removedCurrentMix = record.id;
+    recent = recent.filter(function(r) { return r.record.id !== record.id; });
+    save();
   }
   function reminded(event) { return reminders.indexOf(Data.eventKey(event)) !== -1; }
   function toggleReminder(event) {
@@ -257,6 +265,7 @@ Item {
     } catch (e) { storageError = "Saved library could not be read. Your existing file has been kept."; }
   }
   Timer { id: saveTimer; interval: 400; onTriggered: root.saveNow() }
+  Connections { target: root.radio; function onRecordingChanged() { root.removedCurrentMix = ""; } }
   Timer {
     interval: 1000; running: true; repeat: true
     onTriggered: {

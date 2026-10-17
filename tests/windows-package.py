@@ -7,6 +7,7 @@ import json
 import os
 from pathlib import Path
 import re
+import shutil
 import subprocess
 import sys
 import tempfile
@@ -147,13 +148,15 @@ def main():
                     process.terminate()
                     process.wait(timeout=10)
             assert not re.search(errors, log.read_text(encoding="utf-8", errors="replace")), "Production QML error"
-            for test in ("smoke", "menu-bar", "playback-retry"):
+            for test in ("smoke", "menu-bar", "playback-retry", "library-controls"):
                 result = subprocess.run([sys.executable, str(root / "tests" / f"{test}.py"), str(qa / "dnbradio.exe")],
                                         env=env, capture_output=True, text=True, encoding="utf-8", errors="replace", timeout=120)
                 output = result.stdout + result.stderr
                 (evidence / f"{test}.log").write_text(output, encoding="utf-8")
                 print(output, flush=True)
                 assert result.returncode == 0, f"Packaged {test} failed"
+            for name in ("library-favorites", "library-live-controls", "mini-live-controls"):
+                shutil.copy2(root / "build" / f"{name}.png", evidence / f"{name}.png")
             if "--live" in sys.argv[3:]:
                 result = subprocess.run([str(qa / "dnbradio.exe"), "--test-qml", str(root / "tests/live-stream.qml")],
                     env=dict(env, DNBRADIO_DATA_DIR=str(work / "live-state")), capture_output=True,

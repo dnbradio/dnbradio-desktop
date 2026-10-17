@@ -47,7 +47,7 @@ Rectangle {
       Layout.fillWidth: true
       Button { text: root.resumeAt > 0 ? "Resume" : "Play"; bordered: true; fontSize: Style.font.caption; onClicked: root.radio.playMix(root.mix, true) }
       Item { Layout.fillWidth: true }
-      Button { text: root.library.favorite(root.mix) ? "♥" : "♡"; fontSize: Style.font.caption; tooltipText: "Save favorite"; enabled: root.library.storageReady; onClicked: root.library.toggleFavorite(root.mix) }
+      Button { objectName: "mix-save-" + root.mix.id; text: root.library.favorite(root.mix) ? "Unsave" : "Save"; fontSize: Style.font.caption; tooltipText: root.library.favorite(root.mix) ? "Remove from favorites" : "Save to favorites"; enabled: root.library.storageReady; onClicked: root.library.toggleFavorite(root.mix) }
     }
   }
 }
