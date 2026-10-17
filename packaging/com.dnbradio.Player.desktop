@@ -1,0 +1,10 @@
+[Desktop Entry]
+Type=Application
+Name=DNBRADIO
+Comment=Independent drum and bass radio, mixes, and shows
+Exec=dnbradio
+Icon=com.dnbradio.Player
+Terminal=false
+Categories=AudioVideo;Audio;Player;
+Keywords=radio;music;drum and bass;jungle;
+StartupNotify=true

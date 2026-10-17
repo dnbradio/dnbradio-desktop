@@ -1,0 +1,50 @@
+cmake_minimum_required(VERSION 3.21)
+project(Dnbradio VERSION 0.1.0 LANGUAGES CXX)
+set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+find_package(Qt6 6.8 REQUIRED COMPONENTS Quick QuickControls2 Multimedia Widgets Network)
+qt_standard_project_setup(REQUIRES 6.8)
+
+qt_add_library(player_platform STATIC src/platform.cpp src/platform.h)
+target_link_libraries(player_platform PUBLIC Qt6::Widgets Qt6::Network)
+target_include_directories(player_platform PUBLIC src)
+
+qt_add_executable(dnbradio src/main.cpp)
+set_target_properties(dnbradio PROPERTIES WIN32_EXECUTABLE TRUE MACOSX_BUNDLE TRUE
+    MACOSX_BUNDLE_GUI_IDENTIFIER com.dnbradio.Player
+    MACOSX_BUNDLE_BUNDLE_VERSION ${PROJECT_VERSION}
+    MACOSX_BUNDLE_SHORT_VERSION_STRING ${PROJECT_VERSION})
+target_compile_definitions(dnbradio PRIVATE APP_VERSION="${PROJECT_VERSION}")
+target_link_libraries(dnbradio PRIVATE player_platform Qt6::Quick Qt6::QuickControls2 Qt6::Multimedia)
+
+set(qml_files Main.qml RadioService.qml LibraryState.qml Artwork.qml MixCard.qml
+    SmoothScrollView.qml Button.qml PanelSlider.qml Dropdown.qml TextField.qml Color.qml Style.qml Util.qml)
+set_source_files_properties(qml/Color.qml qml/Style.qml qml/Util.qml PROPERTIES QT_QML_SINGLETON_TYPE TRUE)
+set(qml_sources)
+foreach(file IN LISTS qml_files)
+    set_source_files_properties(qml/${file} PROPERTIES QT_RESOURCE_ALIAS ${file})
+    list(APPEND qml_sources qml/${file})
+endforeach()
+set_source_files_properties(qml/Data.js PROPERTIES QT_RESOURCE_ALIAS Data.js)
+set_source_files_properties(qml/Stations.js PROPERTIES QT_RESOURCE_ALIAS Stations.js)
+qt_add_qml_module(dnbradio URI DnbRadio VERSION 1.0
+    QML_FILES ${qml_sources} qml/Data.js qml/Stations.js)
+qt_add_resources(dnbradio app_assets PREFIX / FILES packaging/com.dnbradio.Player.svg)
+
+include(GNUInstallDirs)
+install(TARGETS dnbradio BUNDLE DESTINATION . RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR})
+if(UNIX AND NOT APPLE)
+    install(FILES packaging/com.dnbradio.Player.desktop DESTINATION ${CMAKE_INSTALL_DATADIR}/applications)
+    install(FILES packaging/com.dnbradio.Player.svg DESTINATION ${CMAKE_INSTALL_DATADIR}/icons/hicolor/scalable/apps)
+    install(FILES packaging/com.dnbradio.Player.metainfo.xml DESTINATION ${CMAKE_INSTALL_DATADIR}/metainfo)
+endif()
+
+include(CTest)
+if(BUILD_TESTING)
+    find_package(Qt6 REQUIRED COMPONENTS Test)
+    qt_add_executable(platform_tests tests/platform_test.cpp)
+    target_link_libraries(platform_tests PRIVATE player_platform Qt6::Test)
+    add_test(NAME platform COMMAND platform_tests)
+    set_tests_properties(platform PROPERTIES ENVIRONMENT QT_QPA_PLATFORM=offscreen)
+    target_compile_definitions(dnbradio PRIVATE DNBRADIO_TEST_HARNESS)
+endif()

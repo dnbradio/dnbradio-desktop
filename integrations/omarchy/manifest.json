@@ -1,0 +1,17 @@
+{
+  "schemaVersion": 1,
+  "id": "com.dnbradio.radio",
+  "name": "DNBRADIO Pulse",
+  "version": "0.4.0",
+  "author": "DNBRADIO",
+  "description": "Six stations, a visual mix library, DJ profiles, show reminders, song history, and contributors.",
+  "kinds": ["service", "bar-widget"],
+  "keepLoaded": true,
+  "entryPoints": {"service": "RadioService.qml", "barWidget": "BarWidget.qml"},
+  "barWidget": {
+    "displayName": "DNBRADIO",
+    "category": "Media",
+    "allowMultiple": false,
+    "defaultSection": "right"
+  }
+}
