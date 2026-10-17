@@ -7,7 +7,7 @@ Main {
     property int ticks: 0
     Component.onCompleted: {
         radio.muted = true;
-        radio.playMix({id: Platform.environment("DNBRADIO_TEST_RECORDING_ID"), title: "Archive HTTPS probe"}, false);
+        radio.playMix({id: "58084", title: "Random Renegade 2026-10-16", artist: "Drastic"}, false);
     }
     Timer {
         interval: 250; running: true; repeat: true

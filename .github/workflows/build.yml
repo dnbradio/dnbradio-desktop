@@ -65,7 +65,7 @@ jobs:
           PYTHONUTF8: '1'
         run: |
           $archive = (Get-ChildItem dist/dnbradio-*-windows-x86_64.zip).FullName
-          python tests/windows-package.py $archive build-windows-package/QA --live --recording 58084
+          python tests/windows-package.py $archive build-windows-package/QA --live --recording
       - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
         if: runner.os == 'Windows' && always()
         with:

@@ -164,10 +164,8 @@ def main():
                 assert result.returncode == 0 and output.count("PASS: live HTTPS radio") == 2, "Live MP3/AAC failed"
                 assert not re.search(errors, output), "Live QML error"
             if "--recording" in sys.argv[3:]:
-                recording_id = sys.argv[sys.argv.index("--recording") + 1]
-                assert recording_id.isdecimal(), "Recording ID must be numeric"
                 result = subprocess.run([str(qa / "dnbradio.exe"), "--test-qml", str(root / "tests/recording-stream.qml")],
-                    env=dict(env, DNBRADIO_DATA_DIR=str(work / "recording-state"), DNBRADIO_TEST_RECORDING_ID=recording_id),
+                    env=dict(env, DNBRADIO_DATA_DIR=str(work / "recording-state")),
                     capture_output=True, text=True, encoding="utf-8", errors="replace", timeout=60)
                 output = result.stdout + result.stderr
                 (evidence / "recording-stream.log").write_text(output, encoding="utf-8")
