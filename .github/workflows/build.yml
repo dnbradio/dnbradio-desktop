@@ -29,7 +29,9 @@ jobs:
         run: cmake -S . -B build -DCMAKE_BUILD_TYPE=Release
       - name: Build
         run: cmake --build build --config Release --parallel 2
-      - name: Storage tests
+      - name: Platform and storage tests
+        env:
+          QT_FORCE_STDERR_LOGGING: '1'
         run: ctest --test-dir build -C Release --output-on-failure
       - name: Shared data tests
         run: node --test tests/data.test.cjs

@@ -16,13 +16,9 @@ private slots:
         QSignalSpy mini(&platform, &Platform::miniPlayerRequested);
         QSignalSpy full(&platform, &Platform::showRequested);
         emit tray->activated(QSystemTrayIcon::Trigger);
-#if defined(Q_OS_MACOS) || defined(Q_OS_LINUX)
         QCOMPARE(mini.count(), 1);
         QCOMPARE(full.count(), 0);
-#else
-        QCOMPARE(full.count(), 1);
-#endif
-#ifdef Q_OS_LINUX
+#ifndef Q_OS_MACOS
         QVERIFY(tray->contextMenu());
         const auto actions = tray->contextMenu()->actions();
         QCOMPARE(actions.size(), 3);
