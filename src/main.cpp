@@ -26,6 +26,7 @@ int main(int argc, char *argv[]) {
 #endif
     parser.process(app);
     Platform platform;
+    QObject::connect(&app, &QCoreApplication::aboutToQuit, &platform, &Platform::shutdownRequested);
     if (!QDir().mkpath(platform.stateDirectory())) {
         qCritical("Could not create the application data directory.");
         return 1;
@@ -40,13 +41,13 @@ int main(int argc, char *argv[]) {
     QObject::connect(&engine, &QQmlApplicationEngine::quit, &app, &QCoreApplication::quit);
     engine.rootContext()->setContextProperty("Platform", &platform);
     QObject::connect(&engine, &QQmlApplicationEngine::objectCreationFailed, &app, [] { QCoreApplication::exit(1); }, Qt::QueuedConnection);
+    platform.setupTray();
 #ifdef DNBRADIO_TEST_HARNESS
     if (parser.isSet("test-qml")) {
         engine.load(QUrl::fromLocalFile(parser.value("test-qml")));
     } else
 #endif
     {
-        platform.setupTray();
         engine.loadFromModule("DnbRadio", "Main");
     }
     return app.exec();

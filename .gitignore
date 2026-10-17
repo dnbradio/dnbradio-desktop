@@ -21,6 +21,7 @@ node_modules/
 __pycache__/
 *.py[cod]
 build/
+build-*/
 dist/
 
 # Qt and Flatpak tooling

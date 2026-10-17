@@ -2,21 +2,27 @@
 
 A standalone Qt desktop player for [DNBRADIO](https://dnbradio.com), with an optional Omarchy plugin.
 
-**Private preview, version 0.1.0.** Linux is the first release target. Windows and macOS builds are checked in CI as development targets; installers for those platforms come later. The repository and releases remain private until the owner explicitly authorizes public distribution.
+**Private preview, version 0.2.0.** Linux x86_64 Flatpak and an Apple Silicon macOS ZIP are available. Windows remains a development build target. The repository and releases remain private until the owner explicitly authorizes public distribution.
 
 ## Install on Linux Mint 22.3 (Cinnamon / X11)
 
-Download `dnbradio-0.1.0-linux-x86_64.flatpak` from this private repository's Releases page, then run:
+Download `dnbradio-0.2.0-linux-x86_64.flatpak` from this private repository's Releases page, then run:
 
 ```sh
 flatpak remote-add --user --if-not-exists flathub https://flathub.org/repo/flathub.flatpakrepo
-flatpak install --user ./dnbradio-0.1.0-linux-x86_64.flatpak
+flatpak install --user ./dnbradio-0.2.0-linux-x86_64.flatpak
 flatpak run com.dnbradio.Player
 ```
 
 The bundle includes the application and uses the KDE Qt runtime from Flathub. Your desktop stays Cinnamon. The app does not require Omarchy, Hyprland, or Quickshell. Linux builds support both X11 and Wayland through Qt. Mint 22.3 Cinnamon/X11 is the initial tester target; Ubuntu LTS, Fedora, and Arch are further validation targets.
 
-No playback starts automatically. Choose a station and press Play, or open a recorded mix. Minimize the window to keep listening. Closing the window quits the standalone player and saves playback positions. A tray icon is offered where the desktop supports one. Reminders are checked while the application is running and also appear inside the window.
+No playback starts automatically. Choose a station and press Play, or open a recorded mix. On Linux and macOS, click the tray/menu-bar icon to open the mini player. It shares playback, stations, quality, volume, recent mixes, and navigation with the full window. On Linux, right-click also offers Mini player, Open player, and Quit. Closing the full window keeps playback running when a tray is available; use Quit to exit and save. Without a tray, closing the window quits. If the desktop panel disappears, the full window reopens. Panel placement on Wayland is controlled by the compositor. Reminders are checked while the application is running and also appear inside the window.
+
+## Install on Apple Silicon macOS
+
+Download `dnbradio-0.2.0-macos-arm64.zip`, extract it outside cloud-sync folders, and move `DNBRADIO.app` to Applications. This private preview targets macOS 26 or later and is ad hoc signed, not notarized. If macOS blocks the first launch, use System Settings → Privacy & Security → Open Anyway for this downloaded app.
+
+Click the menu-bar logo for the mini player. Closing the full window keeps playback running; choose Quit to exit. No playback starts automatically.
 
 ## Features
 
@@ -42,6 +48,8 @@ ctest --test-dir build -C Release --output-on-failure
 node --test tests/data.test.cjs
 # Linux executable; macOS uses build/dnbradio.app/Contents/MacOS/dnbradio:
 python3 tests/smoke.py build/dnbradio
+# Linux tray tests require Xvfb, openbox, trayer, xdotool, and x11-utils:
+dbus-run-session -- xvfb-run -a -s "-screen 0 1280x900x24" bash tests/tray-x11.sh build/dnbradio
 ```
 
 To build the Linux bundle on an x86_64 Linux machine with Flatpak Builder:
@@ -49,6 +57,8 @@ To build the Linux bundle on an x86_64 Linux machine with Flatpak Builder:
 ```sh
 bash scripts/build-flatpak.sh
 ```
+
+The supplied DNBRADIO logo lives in `packaging/menu-bar.svg`. Run `python3 scripts/generate-icons.py` to regenerate the launcher SVG and, on macOS with ImageMagick installed, the Dock/Finder `.icns`. Normal builds use the generated assets and do not require ImageMagick.
 
 ## Architecture and data
 

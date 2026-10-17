@@ -34,6 +34,11 @@ jobs:
       - name: Native UI and audio smoke (X11)
         if: runner.os == 'Linux'
         run: QT_QPA_PLATFORM=xcb xvfb-run -a python3 tests/smoke.py build/dnbradio
+      - name: Linux tray mini player (X11)
+        if: runner.os == 'Linux'
+        run: |
+          sudo apt-get update && sudo apt-get install -y openbox trayer xdotool x11-utils
+          dbus-run-session -- xvfb-run -a -s "-screen 0 1280x900x24" bash tests/tray-x11.sh build/dnbradio
       - name: Verify optional Omarchy package
         if: runner.os == 'Linux'
         run: |
