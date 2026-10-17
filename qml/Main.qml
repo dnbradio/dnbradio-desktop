@@ -27,7 +27,11 @@ Controls.ApplicationWindow {
   font.pixelSize: Style.font.body
   onClosing: radio.shutdown()
   Component.onCompleted: radio.library.open("home")
-  Connections { target: Platform; function onShowRequested() { root.show(); root.raise(); root.requestActivate(); } }
+  Connections {
+    target: Platform
+    function onShowRequested() { root.show(); root.raise(); root.requestActivate(); }
+    function onQuitRequested() { root.close(); }
+  }
 
   function date(value) {
     var d = new Date(value);

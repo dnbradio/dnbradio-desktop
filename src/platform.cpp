@@ -84,7 +84,7 @@ void Platform::setupTray() {
     auto *menu = new QMenu;
     connect(m_tray, &QObject::destroyed, menu, &QObject::deleteLater);
     menu->addAction("Show DNBRADIO", this, &Platform::showRequested);
-    menu->addAction("Quit", qApp, &QApplication::closeAllWindows);
+    menu->addAction("Quit", this, &Platform::quitRequested);
     m_tray->setContextMenu(menu);
     connect(m_tray, &QSystemTrayIcon::activated, this, [this](auto reason) {
         if (reason == QSystemTrayIcon::Trigger) emit showRequested();

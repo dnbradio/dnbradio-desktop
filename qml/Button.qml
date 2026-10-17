@@ -10,7 +10,7 @@ Controls.Button {
     property string tooltipText: ""
     focusPolicy: focusable ? Qt.StrongFocus : Qt.NoFocus
     implicitHeight: 34
-    implicitWidth: contentItem.implicitWidth + 22
+    implicitWidth: Math.ceil(contentItem.implicitWidth) + leftPadding + rightPadding
     padding: 10
     opacity: enabled ? 1 : 0.4
     contentItem: Text {

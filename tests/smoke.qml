@@ -20,6 +20,13 @@ Main {
     }
     function find(name) { return nodes(app.contentItem).find(function(item) { return item.objectName === name; }); }
     function hasText(text) { return nodes(app.contentItem).some(function(item) { return typeof item.text === "string" && item.text.indexOf(text) !== -1; }); }
+    function checkButtonLabels() {
+        var labels = ["Home", "Recorded mixes", "Show schedule", "My library", "Contributors", "Play", "Song history", "Live radio"];
+        nodes(app.contentItem).forEach(function(item) {
+            if (item.contentItem && labels.indexOf(item.text) !== -1)
+                check(!item.contentItem.truncated, "button label clipped: " + item.text);
+        });
+    }
     function advance() { stage++; ticks = 0; }
     Timer {
         interval: 80; running: true; repeat: true
@@ -33,6 +40,7 @@ Main {
                     check(app.radio.stations.length === 6, "station list");
                     check(!app.radio.wantsPlay, "never autoplay");
                     check(hasText("Recently aired"), "home screen");
+                    checkButtonLabels();
                     library.open("mixes"); advance(); break;
                 case 1:
                     var card = find("mix-card-58079");
@@ -92,9 +100,10 @@ Main {
                 case 15:
                     if (app.ticks < 3) return;
                     check(find("mix-card-58079").width > 100, "narrow mix grid");
-                    app.radio.shutdown();
+                    checkButtonLabels();
+                    app.radio.volume = 0.37;
                     console.log("PASS: standalone home, mixes, artwork fallback, library, schedule, reminders, contributor click/Return/Space, DJ stats/pagination, history, purchase links, real audio playback/seek, saved resume, narrow layout");
-                    Qt.exit(0); break;
+                    Platform.quitRequested(); break;
                 }
             } catch (error) {
                 console.error("FAIL:", error.message, app.radio.status());

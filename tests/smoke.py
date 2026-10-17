@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 """Run the actual Qt application against an isolated local API and audio fixture."""
 import json
+import configparser
 import os
 from pathlib import Path
 import re
@@ -31,6 +32,9 @@ try:
         assert library["favorites"][0]["id"] == "58079"
         assert library["recent"][0]["position"] >= 2900
         assert len(library["notified"]) == 1
+        settings = configparser.ConfigParser()
+        settings.read(Path(state) / "player.ini")
+        assert settings.getfloat("General", "volume") == 0.37, "Tray Quit must save before exiting"
         assert any(q.get("dj") == ["djfk"] and q.get("page") == ["2"] for p, q in fixture.requests if p == "/api/podcast")
 finally:
     server.shutdown()

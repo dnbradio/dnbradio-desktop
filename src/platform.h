@@ -20,6 +20,7 @@ public:
 signals:
     void notificationChanged();
     void showRequested();
+    void quitRequested();
 private:
     QString libraryPath() const;
     QString m_notification;
