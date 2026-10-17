@@ -9,11 +9,13 @@ The optional Omarchy plugin remains version 0.4.0.
 - Linux x86_64 Flatpak. Linux Mint 22.3 Cinnamon/X11 is the initial tester target.
 - Apple Silicon macOS ZIP, targeting macOS 26 or later. Ad hoc signed for private
   testing, without Apple notarization or an automatic updater.
-- Windows remains a compilation/test target; no Windows installer is included.
+- Windows x86_64 portable ZIP for Windows 10 (1809+) and Windows 11. Unsigned
+  private preview, including Qt, FFmpeg, and app-local Visual C++ runtime DLLs.
+  No installer or administrator access is required.
 
 The mini player shares the full window's audio session, metadata, station and
 quality selection, volume/mute, archive playback, recent mixes, history, and
-navigation. Linux offers Mini player, Open player, and Quit in its tray menu.
+navigation. Linux and Windows offer Mini player, Open player, and Quit in their tray menus.
 Closing the full window keeps playback running when a tray is available.
 Without a tray it quits. If the panel disappears, the full window reopens.
 
@@ -29,6 +31,9 @@ Without a tray it quits. If the panel disappears, the full window reopens.
 - Linux Flatpak packaging and installed-bundle startup in CI.
 - Local packaged macOS UI/mini-player tests, real HTTPS playback, bundled dependency
   and minimum-OS audit, production test-loader exclusion, and strict signature checks.
+- Windows extracted-ZIP startup, DLL origin checks without Qt on PATH, production
+  test-loader exclusion, matching QA/runtime DLLs, UI/audio fixtures, tray controls,
+  and live HTTPS MP3/AAC playback. A desktop screenshot and logs are retained in CI.
 
 Linux desktop interaction tests use Xvfb, Openbox, and trayer. Exact Mint/Cinnamon
 and Wayland desktop behavior still needs tester feedback. The macOS build host's
@@ -44,9 +49,13 @@ the owner on Apple Silicon.
    deployment target 26.0. Bundle Qt using `macdeployqt`, audit all dependencies and
    minimum OS versions, sign, and verify the final app. Run packaged tests using a
    separate test-enabled executable with the same bundled frameworks.
-4. Create a private GitHub prerelease with the Flatpak, macOS ZIP, checksum file,
-   and optional assembled Omarchy plugin. Keep Flathub and public hosting disabled.
-5. Follow the README installation steps and record tester feedback.
+4. Download the Windows ZIP from the matching successful CI head and verify
+   `SHA256SUMS-windows`. Its `BUILD-INFO.json` records the source commit and runtime
+   versions. Windows was added after the original 0.2.0 release; retain the original
+   tag and identify the Windows build's commit in release notes.
+5. Create or update the private GitHub prerelease with the platform packages,
+   checksum files, and optional assembled Omarchy plugin. Keep public hosting disabled.
+6. Follow the README installation steps and record tester feedback.
 
 ## Known limits
 
@@ -57,3 +66,5 @@ the owner on Apple Silicon.
 - The standalone player and Omarchy plugin have separate libraries/settings.
 - Label catalogue and inferred purchase links remain separate work.
 - A private preview is not a claim of verified support on every target distro.
+- Windows CI runs on Server 2022. Windows 10/11 desktop behavior and audible output
+  still need tester feedback. The portable preview has no Authenticode signature.

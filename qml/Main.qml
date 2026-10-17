@@ -27,7 +27,7 @@ Controls.ApplicationWindow {
   font.family: Style.font.family
   font.pixelSize: Style.font.body
   onClosing: function(close) {
-    if ((Qt.platform.os === "osx" || Qt.platform.os === "linux") && Platform.trayAvailable) {
+    if (Platform.trayAvailable) {
       close.accepted = false;
       root.hide();
     } else { radio.shutdown(); Qt.quit(); }

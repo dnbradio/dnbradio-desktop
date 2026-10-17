@@ -69,7 +69,7 @@ Main {
                     check(!app.visible, "Close hides the full window");
                     Platform.miniPlayerRequested(); advance(); break;
                 case 2:
-                    if (!mini.visible || (Qt.platform.os === "linux" && !mini.active)) return;
+                    if (!mini.visible || (Qt.platform.os !== "osx" && !mini.active)) return;
                     check(!app.visible, "Opening mini should not show full window");
                     check(mini.radio === app.radio, "Mini must share playback state");
                     click("mini-station-0"); advance(); break;
@@ -106,36 +106,36 @@ Main {
                 case 9:
                     click("mini-nav-schedule"); advance(); break;
                 case 10:
-                    if (Qt.platform.os === "linux" && !app.active) return;
+                    if (Qt.platform.os !== "osx" && !app.active) return;
                     check(app.visible && !mini.visible && app.library.tab === "schedule", "Explore opens full page");
                     Platform.miniPlayerRequested(); advance(); break;
                 case 11:
-                    if (!mini.visible || (Qt.platform.os === "linux" && !mini.active)) return;
+                    if (!mini.visible || (Qt.platform.os !== "osx" && !mini.active)) return;
                     click("mini-history"); advance(); break;
                 case 12:
-                    if (Qt.platform.os === "linux" && !app.active) return;
+                    if (Qt.platform.os !== "osx" && !app.active) return;
                     check(app.visible && !mini.visible && app.library.tab === "history", "Mini history navigation");
                     Platform.miniPlayerRequested(); advance(); break;
                 case 13:
-                    if (!mini.visible || (Qt.platform.os === "linux" && !mini.active)) return;
+                    if (!mini.visible || (Qt.platform.os !== "osx" && !mini.active)) return;
                     mini.contentItem.children[1].forceActiveFocus();
                     miniInput.keyClick(Qt.Key_Escape);
                     advance(); break;
                 case 14:
-                    if (Qt.platform.os === "linux" && !app.active) return;
+                    if (Qt.platform.os !== "osx" && !app.active) return;
                     check(!mini.visible, "Escape dismisses mini");
                     Platform.miniPlayerRequested(); advance(); break;
                 case 15:
-                    if (!mini.visible || (Qt.platform.os === "linux" && !mini.active)) return;
+                    if (!mini.visible || (Qt.platform.os !== "osx" && !mini.active)) return;
                     app.requestActivate(); advance(); break;
                 case 16:
                     if (app.ticks < 3) return;
-                    if (Qt.platform.os === "linux") check(app.nativeFocusObserved, "Linux mini must receive focus");
+                    if (Qt.platform.os !== "osx") check(app.nativeFocusObserved, "Tray mini must receive focus");
                     if (app.nativeFocusObserved) check(!mini.visible, "Focus loss dismisses mini");
                     else { console.log("SKIP: native focus-loss check; macOS did not activate the test app"); mini.hide(); }
                     Platform.miniPlayerRequested(); advance(); break;
                 case 17:
-                    if (!mini.visible || (Qt.platform.os === "linux" && !mini.active)) return;
+                    if (!mini.visible || (Qt.platform.os !== "osx" && !mini.active)) return;
                     Platform.miniPlayerRequested(); check(!mini.visible, "Menu-bar toggle closes mini");
                     app.radio.play(); advance(); break;
                 case 18:
@@ -145,7 +145,7 @@ Main {
                     check(!app.visible && app.radio.playing, "Playback survives closing main window");
                     Platform.miniPlayerRequested(); advance(); break;
                 case 20:
-                    if (!mini.visible || (Qt.platform.os === "linux" && !mini.active)) return;
+                    if (!mini.visible || (Qt.platform.os !== "osx" && !mini.active)) return;
                     console.log("PASS: menu-bar shared playback, close-to-tray, station/quality/volume/mute, pause, mixes, navigation, history, Escape/toggle dismissal, dropdown contrast and keyboard selection");
                     click("mini-quit"); break;
                 }

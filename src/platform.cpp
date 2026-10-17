@@ -95,9 +95,7 @@ void Platform::setupTray() {
 #ifndef Q_OS_MACOS
     auto *menu = new QMenu;
     connect(m_tray, &QObject::destroyed, menu, &QObject::deleteLater);
-#ifdef Q_OS_LINUX
     menu->addAction("Mini player", this, &Platform::miniPlayerRequested);
-#endif
     menu->addAction("Open player", this, &Platform::showRequested);
     menu->addAction("Quit", this, &Platform::quitRequested);
     m_tray->setContextMenu(menu);
@@ -106,15 +104,12 @@ void Platform::setupTray() {
 #ifdef Q_OS_MACOS
         if (reason == QSystemTrayIcon::Trigger || reason == QSystemTrayIcon::Context)
             emit miniPlayerRequested();
-#elif defined(Q_OS_LINUX)
-        if (reason == QSystemTrayIcon::Trigger) emit miniPlayerRequested();
 #else
-        if (reason == QSystemTrayIcon::Trigger) emit showRequested();
+        if (reason == QSystemTrayIcon::Trigger) emit miniPlayerRequested();
 #endif
     });
     m_tray->show();
     emit trayAvailableChanged();
-#if defined(Q_OS_MACOS) || defined(Q_OS_LINUX)
     QApplication::setQuitOnLastWindowClosed(!trayAvailable());
     // A panel may start late or restart. Never strand a hidden player without its tray.
     auto *availability = new QTimer(this);
@@ -126,7 +121,6 @@ void Platform::setupTray() {
         emit trayAvailableChanged();
     });
     availability->start(2000);
-#endif
 }
 
 bool Platform::trayAvailable() const {
