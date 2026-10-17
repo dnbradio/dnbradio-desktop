@@ -40,6 +40,7 @@ Window {
     Rectangle { anchors.fill: parent; color: Color.background; border.color: "#65616a"; radius: 10 }
     FocusScope {
         id: focusScope
+        objectName: "mini-content"
         anchors.fill: parent
         focus: true
         Keys.onEscapePressed: root.hide()
@@ -82,6 +83,7 @@ Window {
                 }
                 RowLayout {
                     Layout.fillWidth: true
+                    Action { objectName: "mini-live"; visible: root.radio.mode === "archive"; text: "Back to live"; prominent: true; tooltipText: "Play " + root.radio.station.name + " live"; onClicked: root.radio.tune(root.radio.stationIndex, true) }
                     Action { objectName: "mini-play"; text: root.radio.wantsPlay ? "Pause" : "Play"; bordered: true; selected: root.radio.wantsPlay; onClicked: root.radio.toggle() }
                     Label { Layout.fillWidth: true; text: root.radio.stateText; color: root.radio.playbackError ? Color.urgent : "#b2b3bd"; font.pixelSize: 12; wrapMode: Text.Wrap; maximumLineCount: 2 }
                     Dropdown {
@@ -93,7 +95,6 @@ Window {
                         value: String(Math.min(root.radio.qualityIndex, root.radio.station.streams.length - 1))
                         onChanged: function(value) { root.radio.setQuality(Number(value)); }
                     }
-                    Action { visible: root.radio.mode === "archive"; text: "Live radio"; onClicked: root.radio.tune(root.radio.stationIndex, true) }
                 }
                 RowLayout {
                     Layout.fillWidth: true

@@ -103,6 +103,7 @@ Controls.ApplicationWindow {
     id: row
     required property var mix
     property real resumeAt: 0
+    property bool fromHistory: false
     implicitHeight: Math.max(84, rowContent.implicitHeight + 24)
     color: root.radio.mode === "archive" && root.radio.recording.id === mix.id ? Style.selectedFillFor(Color.foreground, Color.accent) : "transparent"
     border.width: 1
@@ -123,14 +124,31 @@ Controls.ApplicationWindow {
         Label { Layout.fillWidth: true; text: row.mix.title; font.bold: true; maximumLineCount: 2; elide: Text.ElideRight }
         Label { Layout.fillWidth: true; text: row.mix.artist + (row.mix.genre ? " · " + row.mix.genre : ""); font.pixelSize: Style.font.caption; opacity: 0.7; maximumLineCount: 1; elide: Text.ElideRight }
         Label { Layout.fillWidth: true; text: root.day(row.mix.date) + (row.resumeAt > 0 ? " · Resume at " + Catalog.time(row.resumeAt) : " · " + row.mix.plays + " plays"); font.pixelSize: Style.font.caption; opacity: 0.55 }
+        Flow {
+          Layout.fillWidth: true; spacing: 6
+          Action { text: row.resumeAt > 0 ? "Resume" : "Play"; bordered: true; onClicked: root.radio.playMix(row.mix, true) }
+          Action { text: "Details"; onClicked: root.library.showDetails(row.mix) }
+          Action {
+            objectName: (row.fromHistory ? "recent-save-" : "favorite-remove-") + row.mix.id
+            text: row.fromHistory ? (root.library.favorite(row.mix) ? "Unsave" : "Save") : "Remove"
+            tooltipText: root.library.favorite(row.mix) ? "Remove from favorites" : "Save to favorites"
+            enabled: root.library.storageReady
+            onClicked: root.library.toggleFavorite(row.mix)
+          }
+          Action {
+            objectName: "recent-remove-" + row.mix.id
+            visible: row.fromHistory; text: "Remove from history"
+            tooltipText: "Remove this mix and its saved listening position from Recently played"
+            enabled: root.library.storageReady
+            onClicked: root.library.removeRecent(row.mix)
+          }
+        }
       }
-      Action { text: row.resumeAt > 0 ? "Resume" : "Play"; bordered: true; onClicked: root.radio.playMix(row.mix, true) }
-      Action { text: "Details"; onClicked: root.library.showDetails(row.mix) }
-      Action { text: root.library.favorite(row.mix) ? "♥" : "♡"; tooltipText: "Save favorite"; selected: root.library.favorite(row.mix); enabled: root.library.storageReady; onClicked: root.library.toggleFavorite(row.mix) }
     }
   }
 
   FocusScope {
+    objectName: "main-content"
     anchors.fill: parent
     focus: true
     Keys.onEscapePressed: {
@@ -201,6 +219,7 @@ Controls.ApplicationWindow {
       }
       RowLayout {
         Layout.fillWidth: true
+        Action { objectName: "main-live"; visible: root.radio.mode === "archive"; text: "Back to live"; prominent: true; tooltipText: "Play " + root.radio.station.name + " live"; onClicked: root.radio.tune(root.radio.stationIndex, true) }
         Action { objectName: "main-play"; text: root.radio.wantsPlay ? "Pause" : "Play"; bordered: true; selected: root.radio.playing; onClicked: root.radio.toggle() }
         ColumnLayout {
           Layout.fillWidth: true; spacing: 3
@@ -210,7 +229,6 @@ Controls.ApplicationWindow {
         Action { visible: root.radio.mode === "live"; text: "Song history"; onClicked: root.library.open("history") }
         Action { text: root.radio.muted ? "Unmute" : "Mute"; onClicked: root.radio.muted = !root.radio.muted }
         PanelSlider { Layout.preferredWidth: root.width < 950 ? 65 : 100; minimum: 0; maximum: 1; value: root.radio.volume; onMoved: function(value) { root.radio.volume = value; } }
-        Action { text: "Live radio"; onClicked: root.radio.tune(root.radio.stationIndex, true) }
       }
       RowLayout {
         visible: root.radio.mode === "archive"
@@ -310,7 +328,7 @@ Controls.ApplicationWindow {
               RowLayout {
                 Action { text: root.library.resumePosition(details.mix) > 0 ? "Resume · " + Catalog.time(root.library.resumePosition(details.mix)) : "Play mix"; bordered: true; selected: true; onClicked: root.radio.playMix(details.mix, true) }
                 Action { visible: root.library.resumePosition(details.mix) > 0; text: "From start"; onClicked: root.radio.playMix(details.mix, false) }
-                Action { text: root.library.favorite(details.mix) ? "♥ Saved" : "♡ Save"; enabled: root.library.storageReady; onClicked: root.library.toggleFavorite(details.mix) }
+                Action { objectName: "mix-save"; text: root.library.favorite(details.mix) ? "Remove from favorites" : "Save to favorites"; enabled: root.library.storageReady; onClicked: root.library.toggleFavorite(details.mix) }
               }
             }
           }
@@ -369,14 +387,18 @@ Controls.ApplicationWindow {
       clip: true; contentWidth: availableWidth
       Column {
         width: parent.width; spacing: 10
-        Label { text: "Pick up where you left off"; font.pixelSize: 22; font.bold: true }
-        Label { text: "Saved on this desktop. Favorites and listening positions stay between sessions."; opacity: 0.6; width: parent.width; font.pixelSize: Style.font.caption }
+        RowLayout {
+          width: parent.width
+          Label { text: "My library"; font.pixelSize: 22; font.bold: true; Layout.fillWidth: true }
+          Action { objectName: "library-add"; text: "Add mixes"; bordered: true; onClicked: root.library.open("mixes") }
+        }
+        Label { text: "Save mixes for later, or pick up where you left off. Your library stays on this desktop."; opacity: 0.6; width: parent.width; wrapMode: Text.WordWrap; font.pixelSize: Style.font.caption }
+        Label { text: "FAVORITES · " + root.library.favorites.length; color: Color.accent; topPadding: 14; font.pixelSize: Style.font.caption }
+        Label { visible: !root.library.favorites.length; text: "Choose Add mixes, then Save on a mix you want to keep."; opacity: 0.65; width: parent.width; wrapMode: Text.WordWrap }
+        Repeater { model: root.library.favorites; MixRow { required property var modelData; width: parent.width; mix: modelData; resumeAt: root.library.resumePosition(modelData) } }
         Label { text: "RECENTLY PLAYED"; color: Color.accent; topPadding: 14; font.pixelSize: Style.font.caption }
         Label { visible: !root.library.recent.length; text: "Play a recorded mix to start your listening history."; opacity: 0.65; width: parent.width }
-        Repeater { model: root.library.recent; MixRow { required property var modelData; width: parent.width; mix: modelData.record; resumeAt: modelData.position } }
-        Label { text: "FAVORITES · " + root.library.favorites.length; color: Color.accent; topPadding: 14; font.pixelSize: Style.font.caption }
-        Label { visible: !root.library.favorites.length; text: "Use the heart beside a mix to save it here."; opacity: 0.65; width: parent.width }
-        Repeater { model: root.library.favorites; MixRow { required property var modelData; width: parent.width; mix: modelData; resumeAt: root.library.resumePosition(modelData) } }
+        Repeater { model: root.library.recent; MixRow { required property var modelData; width: parent.width; mix: modelData.record; resumeAt: modelData.position; fromHistory: true } }
       }
     }
   }
