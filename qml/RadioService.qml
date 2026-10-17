@@ -38,9 +38,10 @@ Item {
   readonly property bool isLiveDj: mode === "live" && stationMetadataFresh && !!(current.live && current.live.is_live)
   readonly property var history: stationMetadataFresh ? (current.song_history || []) : []
   readonly property var purchaseLinks: mode === "live" && stationMetadataFresh ? Data.songLinks(song) : []
-  readonly property bool playing: player.playbackState === MediaPlayer.PlayingState
+  readonly property bool playing: wantsPlay && player.playbackState === MediaPlayer.PlayingState
+    && player.mediaStatus !== MediaPlayer.LoadingMedia && player.mediaStatus !== MediaPlayer.StalledMedia
   readonly property bool connecting: wantsPlay && !playing
-  readonly property real position: player.position
+  readonly property real position: pendingSeek > 0 ? pendingSeek : player.position
   readonly property real duration: player.duration
   readonly property bool seekable: mode === "archive" && player.seekable && duration > 0
   readonly property string stateText: playbackError ? playbackError : connecting ? "Connecting…" : playing ? (mode === "live" ? "Playing live" : "Playing recording") : "Ready to play"
@@ -58,22 +59,31 @@ Item {
     if (configured) Platform.savePlayer({station: station.id, quality: qualityIndex, volume: volume, muted: muted});
   }
   function shutdown() {
-    libraryManager.rememberPosition(); libraryManager.saveNow(); persist(); player.stop();
+    pause(); libraryManager.saveNow(); persist();
+    pendingSeek = 0;
+    player.stop(); player.source = "";
   }
   Component.onCompleted: configure()
   onVolumeChanged: save()
   onMutedChanged: save()
 
   function play() {
+    var retry = playbackError !== "" || player.error !== MediaPlayer.NoError || player.mediaStatus === MediaPlayer.InvalidMedia;
+    if (retry && mode === "archive") pendingSeek = position;
     playbackError = "";
     wantsPlay = true;
     var url = mode === "archive" ? recording.audio : stream.url;
-    if (player.source.toString() !== url || player.mediaStatus === MediaPlayer.InvalidMedia) {
+    if (retry || player.source.toString() !== url) {
       player.stop();
+      // Setting the same URL is a no-op in QMediaPlayer, including after an error.
+      // Unload it first so one explicit Play creates a fresh backend request.
+      player.source = "";
       player.source = url;
     }
     connectionTimeout.restart();
     player.play();
+    applyResume();
+    if (playing && player.mediaStatus === MediaPlayer.BufferedMedia) connectionTimeout.stop();
   }
   function pause() {
     libraryManager.rememberPosition();
@@ -82,7 +92,15 @@ Item {
     if (mode === "archive") player.pause();
     else player.stop();
   }
-  function toggle() { if (wantsPlay || playing) pause(); else play(); }
+  function toggle() { if (wantsPlay) pause(); else play(); }
+  function failPlayback(message) {
+    libraryManager.rememberPosition();
+    if (mode === "archive") pendingSeek = position;
+    wantsPlay = false;
+    connectionTimeout.stop();
+    playbackError = message;
+    player.stop();
+  }
   function tune(index, start) {
     if (index < 0 || index >= stations.length) return;
     pause();
@@ -117,7 +135,7 @@ Item {
     play();
   }
   function applyResume() {
-    if (pendingSeek > 0 && playing && player.mediaStatus === MediaPlayer.BufferedMedia && player.seekable && player.duration > 0) {
+    if (pendingSeek > 0 && wantsPlay && playing && player.mediaStatus === MediaPlayer.BufferedMedia && player.seekable && player.duration > 0) {
       player.position = Math.min(pendingSeek, Math.max(0, player.duration - 1000));
       pendingSeek = 0;
     }
@@ -144,7 +162,10 @@ Item {
     }
   }
   function seek(milliseconds) {
-    if (seekable && isFinite(milliseconds)) player.position = Math.max(0, Math.min(duration, milliseconds));
+    if (!seekable || !isFinite(milliseconds)) return;
+    var target = Math.max(0, Math.min(duration, milliseconds));
+    if (pendingSeek > 0 || playbackError) pendingSeek = target;
+    else player.position = target;
   }
   function refreshMetadata() {
     if (metadataBusy) return;
@@ -207,7 +228,8 @@ Item {
   }
   function status() {
     return JSON.stringify({station: station.id, mode: mode, title: title, artist: artist,
-      playing: playing, connecting: connecting, error: playbackError, mediaStatus: player.mediaStatus,
+      playing: playing, connecting: connecting, wantsPlay: wantsPlay, error: playbackError, mediaStatus: player.mediaStatus,
+      playbackState: player.playbackState, backendError: player.error, backendErrorString: player.errorString, pendingSeek: pendingSeek,
       position: position, duration: duration, seekable: seekable, volume: volume, muted: muted, quality: qualityIndex,
       source: player.source.toString(), metadataFresh: stationMetadataFresh, listeners: listeners,
       history: history, purchaseLinks: purchaseLinks,
@@ -218,18 +240,15 @@ Item {
   MediaPlayer {
     id: player
     audioOutput: output
-    onPlaybackStateChanged: if (playbackState === MediaPlayer.PlayingState) connectionTimeout.stop()
     onSeekableChanged: root.applyResume()
     onDurationChanged: root.applyResume()
     onMediaStatusChanged: {
       root.applyResume();
-      if (mediaStatus === MediaPlayer.EndOfMedia) { libraryManager.rememberPosition(); root.wantsPlay = false; connectionTimeout.stop(); }
+      if (mediaStatus === MediaPlayer.EndOfMedia && !root.playbackError) { libraryManager.rememberPosition(); root.wantsPlay = false; connectionTimeout.stop(); }
       if (mediaStatus === MediaPlayer.BufferedMedia) connectionTimeout.stop();
     }
     onErrorOccurred: function(error, errorString) {
-      root.wantsPlay = false;
-      connectionTimeout.stop();
-      root.playbackError = "Connection failed · press Play to retry";
+      root.failPlayback("Playback failed · press Play to retry");
       console.warn("DNBRADIO playback:", errorString);
     }
   }
@@ -253,8 +272,7 @@ Item {
     id: connectionTimeout
     interval: 25000
     onTriggered: {
-      root.pause();
-      root.playbackError = "Connection timed out · press Play to retry";
+      root.failPlayback("Connection timed out · press Play to retry");
     }
   }
   Component.onDestruction: { player.stop(); if (metadataRequest) metadataRequest.abort(); if (bassdriveRequest) bassdriveRequest.abort(); }

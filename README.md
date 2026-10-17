@@ -62,6 +62,7 @@ ctest --test-dir build -C Release --output-on-failure
 node --test tests/data.test.cjs
 # Linux executable; macOS uses build/dnbradio.app/Contents/MacOS/dnbradio:
 python3 tests/smoke.py build/dnbradio
+python3 tests/playback-retry.py build/dnbradio
 # Linux tray tests require Xvfb, openbox, trayer, xdotool, x11-utils, and wmctrl:
 dbus-run-session -- xvfb-run -a -s "-screen 0 1280x900x24" bash tests/tray-x11.sh build/dnbradio
 ```
