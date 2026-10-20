@@ -2,7 +2,7 @@
 
 var stations = [
   {id: "dnbradio", name: "DNBRADIO", description: "Live DJs · every flavor of drum & bass", streams: [
-    {label: "320K MP3", url: "https://azura.drmnbss.org/listen/dnbradio/radio.mp3"},
+    {label: "320K MP3", url: "https://azura.drmnbss.org/listen/dnbradio/radio.mp3", macPrebufferMs: 2500},
     {label: "128K AAC", url: "https://azura.drmnbss.org/listen/dnbradio/radio.aac"}]},
   {id: "plushrecs", name: "Atmospheric", description: "Plush Recordings · deep & atmospheric", streams: [
     {label: "320K MP3", url: "https://azura.drmnbss.org/listen/plushrecs/radio.mp3"}]},
