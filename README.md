@@ -2,15 +2,15 @@
 
 A standalone Qt desktop player for [DNBRADIO](https://dnbradio.com), with an optional Omarchy plugin.
 
-**Private preview, version 0.2.1.** Linux x86_64 Flatpak, Apple Silicon macOS ZIP, and Windows x86_64 portable ZIP packages are available. The repository and releases remain private until the owner explicitly authorizes public distribution.
+**Private preview, version 0.2.2.** Linux x86_64 Flatpak, Apple Silicon macOS ZIP, and Windows x86_64 portable ZIP packages are available. The repository and releases remain private until the owner explicitly authorizes public distribution.
 
 ## Install on Linux Mint 22.3 (Cinnamon / X11)
 
-Download `dnbradio-0.2.1-linux-x86_64.flatpak` from this private repository's Releases page, then run:
+Download `dnbradio-0.2.2-linux-x86_64.flatpak` from this private repository's Releases page, then run:
 
 ```sh
 flatpak remote-add --user --if-not-exists flathub https://flathub.org/repo/flathub.flatpakrepo
-flatpak install --user ./dnbradio-0.2.1-linux-x86_64.flatpak
+flatpak install --user ./dnbradio-0.2.2-linux-x86_64.flatpak
 flatpak run com.dnbradio.Player
 ```
 
@@ -20,13 +20,13 @@ No playback starts automatically. Choose a station and press Play, or open a rec
 
 ## Install on Apple Silicon macOS
 
-Download `dnbradio-0.2.1-macos-arm64.zip`, extract it outside cloud-sync folders, and move `DNBRADIO.app` to Applications. This private preview targets macOS 26 or later and is ad hoc signed, not notarized. If macOS blocks the first launch, use System Settings → Privacy & Security → Open Anyway for this downloaded app.
+Download `dnbradio-0.2.2-macos-arm64.zip`, extract it outside cloud-sync folders, and move `DNBRADIO.app` to Applications. This private preview targets macOS 26 or later and is ad hoc signed, not notarized. If macOS blocks the first launch, use System Settings → Privacy & Security → Open Anyway for this downloaded app.
 
-Click the menu-bar logo for the mini player. Closing the full window keeps playback running; choose Quit to exit. No playback starts automatically.
+Click the menu-bar logo for the mini player. Closing the full window keeps playback running; choose Quit to exit. No playback starts automatically. DNBRADIO’s 320K MP3 stream preloads for 2.5 seconds before audio starts to prevent the brief cutouts reported on Apple Silicon. Pause cancels a pending start.
 
 ## Install on Windows
 
-Download `dnbradio-0.2.1-windows-x86_64.zip`, extract the entire ZIP, and run
+Download `dnbradio-0.2.2-windows-x86_64.zip`, extract the entire ZIP, and run
 `DNBRADIO/dnbradio.exe`. Requires 64-bit Windows 10 (1809+) or Windows 11.
 Qt, audio codecs, and the Visual C++ runtime are included. Keep the executable
 with its DLLs and folders. No installation or administrator access is required.
@@ -81,7 +81,7 @@ and portable ZIP after the test build above:
 cmake -S . -B build-release -DCMAKE_BUILD_TYPE=Release -DBUILD_TESTING=OFF
 cmake --build build-release --config Release --parallel
 python scripts/package-windows.py build-release/Release/dnbradio.exe build/Release/dnbradio.exe
-python tests/windows-package.py dist/dnbradio-0.2.1-windows-x86_64.zip build-windows-package/QA --live
+python tests/windows-package.py dist/dnbradio-0.2.2-windows-x86_64.zip build-windows-package/QA --live
 ```
 
 Packaging uses fresh `build-windows-package/DNBRADIO` and `QA` directories and
