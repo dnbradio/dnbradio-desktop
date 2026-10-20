@@ -35,11 +35,13 @@ jobs:
         run: ctest --test-dir build -C Release --output-on-failure
       - name: Shared data tests
         run: node --test tests/data.test.cjs
-      - name: macOS live startup and restart (AVFoundation)
+      - name: macOS live prebuffer, startup, and restart (AVFoundation)
         if: runner.os == 'macOS'
         env:
           QT_MEDIA_BACKEND: darwin
-        run: python3 tests/live-stream.py build/dnbradio.app/Contents/MacOS/dnbradio
+        run: |
+          python3 tests/live-prebuffer.py build/dnbradio.app/Contents/MacOS/dnbradio
+          python3 tests/live-stream.py build/dnbradio.app/Contents/MacOS/dnbradio
       - name: Native UI and audio smoke (X11)
         if: runner.os == 'Linux'
         run: |

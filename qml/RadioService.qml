@@ -23,6 +23,8 @@ Item {
   property bool bassdriveFresh: false
   property alias library: libraryManager
   property real pendingSeek: 0
+  readonly property bool prebuffering: livePrebuffer.running
+  property int livePrebufferMs: Qt.platform.os === "osx" ? (stream.macPrebufferMs || 0) : 0
   readonly property var recordings: libraryManager.latest
   readonly property bool archiveLoading: libraryManager.loading
   readonly property bool archiveFailed: libraryManager.archiveError !== ""
@@ -44,7 +46,7 @@ Item {
   readonly property real position: pendingSeek > 0 ? pendingSeek : player.position
   readonly property real duration: player.duration
   readonly property bool seekable: mode === "archive" && player.seekable && duration > 0
-  readonly property string stateText: playbackError ? playbackError : connecting ? "Connecting…" : playing ? (mode === "live" ? "Playing live" : "Playing recording") : "Ready to play"
+  readonly property string stateText: playbackError ? playbackError : prebuffering ? "Buffering live audio…" : connecting ? "Connecting…" : playing ? (mode === "live" ? "Playing live" : "Playing recording") : "Ready to play"
 
   function configure() {
     var settings = Platform.loadPlayer();
@@ -68,19 +70,33 @@ Item {
   onMutedChanged: save()
 
   function play() {
+    if (livePrebuffer.running) return;
     var retry = playbackError !== "" || player.error !== MediaPlayer.NoError || player.mediaStatus === MediaPlayer.InvalidMedia;
     if (retry && mode === "archive") pendingSeek = position;
     playbackError = "";
     wantsPlay = true;
     var url = mode === "archive" ? recording.audio : stream.url;
-    if (retry || player.source.toString() !== url) {
+    var reopen = retry || player.source.toString() !== url;
+    if (reopen) {
       player.stop();
       // Setting the same URL is a no-op in QMediaPlayer, including after an error.
       // Unload it first so one explicit Play creates a fresh backend request.
       player.source = "";
       player.source = url;
     }
+    if (!wantsPlay) return;
     connectionTimeout.restart();
+    // Give this live MP3 mount time to accumulate audio before starting on
+    // AVFoundation. Pause/source changes cancel the pending start.
+    if (reopen && mode === "live" && livePrebufferMs > 0) {
+      livePrebuffer.interval = livePrebufferMs;
+      livePrebuffer.restart();
+      return;
+    }
+    beginPlayback();
+  }
+  function beginPlayback() {
+    if (!wantsPlay) return;
     player.play();
     applyResume();
     if (playing && player.mediaStatus === MediaPlayer.BufferedMedia) connectionTimeout.stop();
@@ -88,6 +104,7 @@ Item {
   function pause() {
     libraryManager.rememberPosition();
     wantsPlay = false;
+    livePrebuffer.stop();
     connectionTimeout.stop();
     if (mode === "archive") player.pause();
     else {
@@ -102,6 +119,7 @@ Item {
     libraryManager.rememberPosition();
     if (mode === "archive") pendingSeek = position;
     wantsPlay = false;
+    livePrebuffer.stop();
     connectionTimeout.stop();
     playbackError = message;
     player.stop();
@@ -233,7 +251,7 @@ Item {
   }
   function status() {
     return JSON.stringify({station: station.id, mode: mode, title: title, artist: artist,
-      playing: playing, connecting: connecting, wantsPlay: wantsPlay, error: playbackError, mediaStatus: player.mediaStatus,
+      playing: playing, connecting: connecting, prebuffering: prebuffering, wantsPlay: wantsPlay, error: playbackError, mediaStatus: player.mediaStatus,
       playbackState: player.playbackState, backendError: player.error, backendErrorString: player.errorString, pendingSeek: pendingSeek,
       position: position, duration: duration, seekable: seekable, volume: volume, muted: muted, quality: qualityIndex,
       source: player.source.toString(), metadataFresh: stationMetadataFresh, listeners: listeners,
@@ -249,8 +267,8 @@ Item {
     onDurationChanged: root.applyResume()
     onMediaStatusChanged: {
       root.applyResume();
-      if (mediaStatus === MediaPlayer.EndOfMedia && !root.playbackError) { libraryManager.rememberPosition(); root.wantsPlay = false; connectionTimeout.stop(); }
-      if (mediaStatus === MediaPlayer.BufferedMedia) connectionTimeout.stop();
+      if (mediaStatus === MediaPlayer.EndOfMedia && !root.playbackError) { libraryManager.rememberPosition(); root.wantsPlay = false; livePrebuffer.stop(); connectionTimeout.stop(); }
+      if (mediaStatus === MediaPlayer.BufferedMedia && root.playing) connectionTimeout.stop();
     }
     onErrorOccurred: function(error, errorString) {
       root.failPlayback("Playback failed · press Play to retry");
@@ -258,6 +276,7 @@ Item {
     }
   }
   LibraryState { id: libraryManager; radio: root }
+  Timer { id: livePrebuffer; onTriggered: root.beginPlayback() }
   Timer { id: bassdriveTimeout; interval: 10000; onTriggered: { if (root.bassdriveRequest) root.bassdriveRequest.abort(); root.bassdriveRequest = null; root.bassdriveFresh = false; } }
   Timer { interval: 30000; running: true; repeat: true; triggeredOnStart: true; onTriggered: root.refreshBassdrive() }
   Timer { id: saveTimer; interval: 350; onTriggered: root.persist() }
