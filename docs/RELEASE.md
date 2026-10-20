@@ -1,12 +1,12 @@
-# 0.2.1 private preview
+# 0.2.2 private preview
 
-This release fixes Play-after-error for recorded mixes, preserving the mix and
-resume position while reopening the failed backend. It also fixes live
-Pause/Play recovery on macOS by opening a fresh live connection.
+This release adds a 2.5-second preload before starting or reopening DNBRADIO’s
+320K MP3 stream on macOS. The player shows “Buffering live audio…” while waiting.
+Pause, failures, quality/station changes, and Quit cancel the pending start.
+AAC, recordings, other stations, Linux, and Windows keep their startup behavior.
 
-My Library now has explicit Save and Remove controls, and a prominent Back to live
-button sits beside Play/Pause in both the full and mini players. The optional
-Omarchy plugin remains version 0.4.0.
+It includes the previous playback-retry, library controls, and live Pause/Play
+fixes. The optional Omarchy plugin remains version 0.4.0.
 
 ## Release scope
 
@@ -45,9 +45,12 @@ and Wayland desktop behavior still needs tester feedback. Native macOS focus-los
 validation remains limited; QML controls and native status-item activation were
 exercised. The owner tested the updated candidate on an M2 Air with macOS 26.5.2
 and reported that it now seems fine. Automated tests on that Air reproduced the live restart
-hang before the fix and passed afterward for MP3 and AAC. The separately reported
-320K startup skipping was not reproduced in muted traces; no prebuffering setting
-was changed, and its exact cause remains unconfirmed.
+hang before the fix and passed afterward for MP3 and AAC. The owner also confirmed that the 0.2.2 buffering candidate eliminated repeated
+10–50 ms cutouts on the M2 Air with a Scarlett 4i4 at 44.1 kHz. The exact
+underlying AVFoundation timing fault remains unconfirmed. Automated muted traces
+verify progress and control behavior, not audible output. A new local-fixture
+regression checks preload cancellation, retries, quality/station switches,
+recordings, and shutdown; macOS CI runs it before real MP3/AAC startup/restart.
 
 ## Private release procedure
 
