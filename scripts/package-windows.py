@@ -67,6 +67,7 @@ def main():
         raise RuntimeError("Test libraries must not be included in the release")
     shutil.copy2(root / "packaging/windows-README.txt", stage / "README.txt")
     shutil.copy2(root / "packaging/THIRD-PARTY-NOTICES.md", stage)
+    shutil.copy2(root / "LICENSE", stage / "LICENSE.txt")
     licenses = stage / "licenses"
     licenses.mkdir()
     for name in ("LGPL-3.0-only", "GPL-3.0-only", "GPL-2.0-only", "Qt-GPL-exception-1.0"):
@@ -78,7 +79,7 @@ def main():
     (stage / "BUILD-INFO.json").write_text(json.dumps({
         "version": version, "source_commit": source, "qt_version": qt_version,
         "architecture": "x86_64", "build_testing": False,
-        "compiler_runtime": runtime.parents[1].name, "signing": "unsigned private preview",
+        "compiler_runtime": runtime.parents[1].name, "signing": "unsigned",
     }, indent=2) + "\n", encoding="utf-8")
     archive = Path(shutil.make_archive(str(args.output / f"dnbradio-{version}-windows-x86_64"),
                                       "zip", stage.parent, stage.name))
