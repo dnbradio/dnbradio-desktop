@@ -20,9 +20,9 @@ Deleting the extracted application folder does not delete your library.
 There is no automatic updater. Exit the old version before extracting updates.
 
 Report problems:
-https://github.com/dnbradio/dnbradio-os-player/issues
+https://github.com/dnbradio/dnbradio-desktop/issues
 BUILD-INFO.json identifies the exact source used for this Windows build.
 
 DNBRADIO is free software under the GNU General Public License, version 3
 or later. See LICENSE.txt and THIRD-PARTY-NOTICES.md. Source code:
-https://github.com/dnbradio/dnbradio-os-player
+https://github.com/dnbradio/dnbradio-desktop

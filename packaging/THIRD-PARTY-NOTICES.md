@@ -2,7 +2,7 @@
 
 DNBRADIO is free software under the GNU General Public License, version 3 or
 later. See `LICENSE.txt`. The source code is at
-https://github.com/dnbradio/dnbradio-os-player.
+https://github.com/dnbradio/dnbradio-desktop.
 
 DNBRADIO dynamically links Qt and FFmpeg. These components retain their own
 copyrights and licenses. You may replace the shared libraries with compatible

@@ -6,7 +6,7 @@ It's a native Qt app. It isn't a website in a wrapper, and it doesn't need an ac
 
 ## Download
 
-Get the latest version from the [releases page](https://github.com/dnbradio/dnbradio-os-player/releases/latest) or from [dnbradio.com/apps](https://dnbradio.com/apps).
+Get the latest version from the [releases page](https://github.com/dnbradio/dnbradio-desktop/releases/latest) or from [dnbradio.com/apps](https://dnbradio.com/apps).
 
 | Platform | File | Requirements |
 |---|---|---|
@@ -71,7 +71,7 @@ There's no account, analytics or tracking. The app talks to public endpoints onl
 
 ## Report a problem
 
-Open an [issue](https://github.com/dnbradio/dnbradio-os-player/issues) with your platform, the version you downloaded and what you were playing. For anything else, use the [contact page](https://dnbradio.com/contact).
+Open an [issue](https://github.com/dnbradio/dnbradio-desktop/issues) with your platform, the version you downloaded and what you were playing. For anything else, use the [contact page](https://dnbradio.com/contact).
 
 ## Build from source
 
