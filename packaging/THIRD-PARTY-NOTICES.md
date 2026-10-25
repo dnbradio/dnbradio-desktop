@@ -1,10 +1,14 @@
 # Bundled Windows runtime components
 
+DNBRADIO is free software under the GNU General Public License, version 3 or
+later. See `LICENSE.txt`. The source code is at
+https://github.com/dnbradio/dnbradio-os-player.
+
 DNBRADIO dynamically links Qt and FFmpeg. These components retain their own
 copyrights and licenses. You may replace the shared libraries with compatible
-versions. The application's private distribution terms do not restrict rights
-granted by the third-party licenses, including debugging modifications to those
-libraries. License texts are included under `licenses/`.
+versions. DNBRADIO's license does not restrict rights granted by the third-party
+licenses, including debugging modifications to those libraries. License texts
+are included under `licenses/`.
 
 - Qt: Copyright The Qt Company Ltd. and contributors. Qt libraries are used
   under LGPL v3, with applicable third-party notices and exceptions. The exact
@@ -19,4 +23,4 @@ libraries. License texts are included under `licenses/`.
 
 Qt deployment also includes graphics support libraries and Qt's third-party
 components. Their notices and sources are included in the corresponding Qt
-source distribution. This preview does not modify Qt or FFmpeg.
+source distribution. This build does not modify Qt or FFmpeg.

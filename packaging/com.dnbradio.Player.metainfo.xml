@@ -4,10 +4,12 @@
   <name>DNBRADIO</name>
   <summary>Independent drum and bass radio, mixes, and shows</summary>
   <metadata_license>CC0-1.0</metadata_license>
-  <project_license>LicenseRef-proprietary</project_license>
+  <project_license>GPL-3.0-or-later</project_license>
   <description><p>Listen to live radio, explore recorded mixes and DJ profiles, follow the show schedule, and save your favorite sessions.</p></description>
   <launchable type="desktop-id">com.dnbradio.Player.desktop</launchable>
-  <url type="homepage">https://dnbradio.com</url>
+  <url type="homepage">https://dnbradio.com/apps</url>
+  <url type="bugtracker">https://github.com/dnbradio/dnbradio-os-player/issues</url>
+  <url type="vcs-browser">https://github.com/dnbradio/dnbradio-os-player</url>
   <content_rating type="oars-1.1"/>
   <releases>
     <release version="0.2.2" date="2026-10-20"/>
