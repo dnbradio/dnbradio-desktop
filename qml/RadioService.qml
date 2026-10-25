@@ -43,6 +43,7 @@ Item {
   readonly property bool playing: wantsPlay && player.playbackState === MediaPlayer.PlayingState
     && player.mediaStatus !== MediaPlayer.LoadingMedia && player.mediaStatus !== MediaPlayer.StalledMedia
   readonly property bool connecting: wantsPlay && !playing
+  readonly property bool awaitingAudio: connectionTimeout.running
   readonly property real position: pendingSeek > 0 ? pendingSeek : player.position
   readonly property real duration: player.duration
   readonly property bool seekable: mode === "archive" && player.seekable && duration > 0
@@ -251,7 +252,7 @@ Item {
   }
   function status() {
     return JSON.stringify({station: station.id, mode: mode, title: title, artist: artist,
-      playing: playing, connecting: connecting, prebuffering: prebuffering, wantsPlay: wantsPlay, error: playbackError, mediaStatus: player.mediaStatus,
+      playing: playing, connecting: connecting, awaitingAudio: awaitingAudio, prebuffering: prebuffering, wantsPlay: wantsPlay, error: playbackError, mediaStatus: player.mediaStatus,
       playbackState: player.playbackState, backendError: player.error, backendErrorString: player.errorString, pendingSeek: pendingSeek,
       position: position, duration: duration, seekable: seekable, volume: volume, muted: muted, quality: qualityIndex,
       source: player.source.toString(), metadataFresh: stationMetadataFresh, listeners: listeners,

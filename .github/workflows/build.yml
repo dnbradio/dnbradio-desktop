@@ -48,6 +48,7 @@ jobs:
           QT_QPA_PLATFORM=xcb xvfb-run -a python3 tests/smoke.py build/dnbradio
           QT_QPA_PLATFORM=xcb xvfb-run -a python3 tests/playback-retry.py build/dnbradio
           QT_QPA_PLATFORM=xcb xvfb-run -a python3 tests/library-controls.py build/dnbradio
+          QT_QPA_PLATFORM=xcb xvfb-run -a python3 tests/connection-watchdog.py build/dnbradio
       - name: Linux tray mini player (X11)
         if: runner.os == 'Linux'
         run: |

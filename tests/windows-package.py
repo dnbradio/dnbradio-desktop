@@ -148,7 +148,7 @@ def main():
                     process.terminate()
                     process.wait(timeout=10)
             assert not re.search(errors, log.read_text(encoding="utf-8", errors="replace")), "Production QML error"
-            for test in ("smoke", "menu-bar", "playback-retry", "library-controls"):
+            for test in ("smoke", "menu-bar", "playback-retry", "library-controls", "connection-watchdog"):
                 result = subprocess.run([sys.executable, str(root / "tests" / f"{test}.py"), str(qa / "dnbradio.exe")],
                                         env=env, capture_output=True, text=True, encoding="utf-8", errors="replace", timeout=120)
                 output = result.stdout + result.stderr
