@@ -1,8 +1,9 @@
 #!/usr/bin/env bash
 set -euo pipefail
 cd "$(dirname "$0")/.."
+version=$(sed -n 's/^project(Dnbradio VERSION \([0-9.]*\).*/\1/p' CMakeLists.txt)
 (cd dist && sha256sum --check SHA256SUMS)
-flatpak install --user --noninteractive --assumeyes dist/dnbradio-0.2.2-linux-x86_64.flatpak
+flatpak install --user --noninteractive --assumeyes dist/dnbradio-$version-linux-x86_64.flatpak
 status=0
 dbus-run-session -- xvfb-run -a timeout 15s flatpak run \
   --env=QT_QPA_PLATFORM=xcb --env=QT_QUICK_BACKEND=software \
