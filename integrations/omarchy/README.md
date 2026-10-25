@@ -1,6 +1,6 @@
 # DNBRADIO Pulse for Omarchy 4
 
-Native Quickshell player and library, version 0.4.0. Click **DNB** in the bar.
+Native Quickshell player and library, version 0.5.0. Click **DNB** in the bar.
 Right-click to play/pause, or scroll over the widget to adjust volume. The
 service and audio player are shared across monitors. Closing a window keeps
 audio playing. Playback does not start automatically at login.
@@ -14,8 +14,10 @@ audio playing. Playback does not start automatically at login.
 - DJ profiles with public bio, membership date, play/mix counts, social links,
   next show, and paginated mixes. Open profiles from shows or mix cards.
 - Song history beside now playing, with artwork, times, albums and explicit
-  purchase links when supplied by the station. Purchase URLs are not inferred
-  from track names or identifiers. Bassdrive's feed has no song history.
+  purchase links when supplied by the station. Verified label accounts appear as
+  “Label: …” links. A verified release link is offered when there is no explicit
+  track link and identifiers, artist and title corroborate a maintained mapping.
+  Bassdrive's feed has no song history.
 - Full paginated recording archive with title/DJ/description search, exact genre
   filtering, and newest/oldest/most-played sorting.
 - Mix artwork, description, tracklist, genre, plays, download, and copy-link
@@ -51,7 +53,10 @@ It never bypasses a locked session. Over SSH, use the desktop's `OMARCHY_PATH`,
 `WAYLAND_DISPLAY` and `XDG_RUNTIME_DIR` environment values.
 
 No root access, API key, web server, or extra background service is needed.
-Network requests run in the existing shell. Public requests go to DNBRADIO,
+Network requests run in the existing shell. Version 0.5.0 reads enriched station
+metadata from `https://dnbradio.com/api/nowplaying`, where DNBRADIO maintains the
+verified label and release mappings. `DNBRADIO_NOWPLAYING_URL` still accepts an
+unmodified AzuraCast feed for testing or rollback. Public requests go to DNBRADIO,
 its AzuraCast server, JungleTrain, Bassdrive, and artwork hosts published in their feeds.
 
 ## Storage and controls
@@ -128,7 +133,8 @@ python3 build/omarchy/tests/native-scroll.py
 
 It briefly opens isolated test windows in the current Wayland session.
 It uses a separate Quickshell config, fixture API, local state,
-intercepted notification/compositor commands, and muted real archive/Bassdrive playback.
+intercepted notifications, compositor geometry commands scoped to a uniquely named QA window,
+and muted real archive/Bassdrive playback.
 It never controls the installed desktop plugin. Checks cover the bar widget,
 compact popup and every library screen, loaded artwork, four-column cards, DJ
 profiles, full song history, purchase links, QML errors, failed-page retries,

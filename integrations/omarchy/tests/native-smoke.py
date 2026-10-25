@@ -62,7 +62,9 @@ class Handler(BaseHTTPRequestHandler):
                                   location="London", member_since="2020-02", stats=dict(mixes=50, plays=12345),
                                   links=[dict(label="SoundCloud", url="https://soundcloud.com/djfk")]))
         elif url.path == "/nowplaying":
-            song = dict(title="Current tune", artist="Test artist", art=mix["profile_image"], custom_fields=dict(bandcamp_url="https://example.bandcamp.com/track/test"))
+            song = dict(title="Current tune", artist="Test artist", art=mix["profile_image"], custom_fields=dict(buy_url="https://example.bandcamp.com/track/test", bandcamp_url="https://plush.bandcamp.com"),
+                        label_metadata=dict(status="resolved", label_links=[dict(url="https://plush.bandcamp.com", label="Label: Plush Recordings", kind="label")],
+                                            release_links=[dict(url="https://plush.bandcamp.com/album/verified", label="Buy release", kind="release")]))
             data = [dict(station=dict(shortcode="dnbradio"), now_playing=dict(song=song), listeners=dict(current=42),
                          song_history=[dict(sh_id=i, played_at=int(time.time()) - i * 300, song=dict(song, title="History tune " + str(i))) for i in range(1, 16)])]
         elif url.path == "/bassdrive":
@@ -173,10 +175,9 @@ ShellRoot {
         notifier = root / "bin/notify-send"
         notifier.write_text('#!/bin/sh\nprintf "%s\\n" "$@" >> "' + str(root / "notifications") + '"\n')
         notifier.chmod(0o755)
-        # Library geometry commands must never target an installed library window.
-        compositor = root / "bin/hyprctl"
-        compositor.write_text('#!/bin/sh\nexit 0\n')
-        compositor.chmod(0o755)
+        # Give the copied library a unique title so its geometry commands target only QA.
+        library_qml = root / "plugin/LibraryWindow.qml"
+        library_qml.write_text(library_qml.read_text().replace("DNBRADIO · Library", "DNBRADIO · Native QA Library " + str(os.getpid())))
         env = dict(os.environ, DNBRADIO_API_BASE=f"http://127.0.0.1:{server.server_port}",
                    DNBRADIO_NOWPLAYING_URL=f"http://127.0.0.1:{server.server_port}/nowplaying",
                    DNBRADIO_BASSDRIVE_URL=f"http://127.0.0.1:{server.server_port}/bassdrive",
@@ -264,6 +265,9 @@ ShellRoot {
                     cards = ui()["cards"]
                     assert len(cards) == 5 and len({c["y"] for c in cards[:4]}) == 1 and cards[4]["y"] > cards[0]["y"]
             assert json.loads(ipc("status"))["purchaseLinks"][0]["label"] == "Bandcamp"
+            assert json.loads(ipc("status"))["purchaseLinks"][1]["label"] == "Label: Plush Recordings"
+            assert len(json.loads(ipc("status"))["purchaseLinks"]) == 2, "explicit track link suppresses mapped release"
+            assert any("Label: Plush Recordings" in text for text in ui()["texts"]), "label link visible in native library"
             for action in ["click", "return", "space"]:
                 ipc("open", "contributors")
                 wait(lambda: not ui()["supportLoading"] and any("Junglist" in text for text in ui()["texts"]), "contributor card ready")
@@ -365,7 +369,7 @@ ShellRoot {
             ipc("saveLibrary")
             assert state.read_text() == "existing damaged file"
             assert_no_qml_errors()
-            print("PASS: native widget/popup, home/four-column cards/artwork, DJ profiles/pages, artwork fallback/reset, larger schedule/library art, contributor avatars and click/Return/Space navigation, full song history/purchase links, Bassdrive playback, search, failed-page retries, details, contributors, favorites, real playback/resume, persistence, reminders, legacy fallback, corrupt-state protection")
+            print("PASS: native widget/popup, home/four-column cards/artwork, DJ profiles/pages, artwork fallback/reset, larger schedule/library art, contributor avatars and click/Return/Space navigation, full song history/purchase links/label presentation and precedence, Bassdrive playback, search, failed-page retries, details, contributors, favorites, real playback/resume, persistence, reminders, legacy fallback, corrupt-state protection")
         except Exception:
             log.flush()
             print((root / "runtime.log").read_text()[-6000:])
