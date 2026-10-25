@@ -86,6 +86,7 @@ node --test tests/data.test.cjs
 python3 tests/smoke.py build/dnbradio
 python3 tests/playback-retry.py build/dnbradio
 python3 tests/library-controls.py build/dnbradio
+python3 tests/connection-watchdog.py build/dnbradio
 # Linux tray tests need Xvfb, openbox, trayer, xdotool, x11-utils and wmctrl:
 dbus-run-session -- xvfb-run -a -s "-screen 0 1280x900x24" bash tests/tray-x11.sh build/dnbradio
 ```

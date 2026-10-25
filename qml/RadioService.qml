@@ -23,6 +23,8 @@ Item {
   property bool bassdriveFresh: false
   property alias library: libraryManager
   property real pendingSeek: 0
+  property real progressPosition: 0
+  property real progressMs: 0
   readonly property bool prebuffering: livePrebuffer.running
   property int livePrebufferMs: Qt.platform.os === "osx" ? (stream.macPrebufferMs || 0) : 0
   readonly property var recordings: libraryManager.latest
@@ -43,6 +45,7 @@ Item {
   readonly property bool playing: wantsPlay && player.playbackState === MediaPlayer.PlayingState
     && player.mediaStatus !== MediaPlayer.LoadingMedia && player.mediaStatus !== MediaPlayer.StalledMedia
   readonly property bool connecting: wantsPlay && !playing
+  readonly property bool awaitingAudio: connectionTimeout.running
   readonly property real position: pendingSeek > 0 ? pendingSeek : player.position
   readonly property real duration: player.duration
   readonly property bool seekable: mode === "archive" && player.seekable && duration > 0
@@ -157,6 +160,15 @@ Item {
     pendingSeek = resume ? libraryManager.resumePosition(next) : 0;
     play();
   }
+  // Qt's FFmpeg backend reports LoadedMedia after any seek and stays BufferingMedia until four seconds
+  // are queued, which a live stream may never reach, so advancing audio also proves playback started.
+  function trackProgress() {
+    var delta = player.position - progressPosition;
+    progressPosition = player.position;
+    if (!connectionTimeout.running || !playing || pendingSeek > 0 || delta <= 0 || delta > 2000) { progressMs = 0; return; }
+    progressMs += delta;
+    if (progressMs >= 1000) connectionTimeout.stop();
+  }
   function applyResume() {
     if (pendingSeek > 0 && wantsPlay && playing && player.mediaStatus === MediaPlayer.BufferedMedia && player.seekable && player.duration > 0) {
       player.position = Math.min(pendingSeek, Math.max(0, player.duration - 1000));
@@ -251,7 +263,7 @@ Item {
   }
   function status() {
     return JSON.stringify({station: station.id, mode: mode, title: title, artist: artist,
-      playing: playing, connecting: connecting, prebuffering: prebuffering, wantsPlay: wantsPlay, error: playbackError, mediaStatus: player.mediaStatus,
+      playing: playing, connecting: connecting, awaitingAudio: awaitingAudio, prebuffering: prebuffering, wantsPlay: wantsPlay, error: playbackError, mediaStatus: player.mediaStatus,
       playbackState: player.playbackState, backendError: player.error, backendErrorString: player.errorString, pendingSeek: pendingSeek,
       position: position, duration: duration, seekable: seekable, volume: volume, muted: muted, quality: qualityIndex,
       source: player.source.toString(), metadataFresh: stationMetadataFresh, listeners: listeners,
@@ -265,6 +277,7 @@ Item {
     audioOutput: output
     onSeekableChanged: root.applyResume()
     onDurationChanged: root.applyResume()
+    onPositionChanged: root.trackProgress()
     onMediaStatusChanged: {
       root.applyResume();
       if (mediaStatus === MediaPlayer.EndOfMedia && !root.playbackError) { libraryManager.rememberPosition(); root.wantsPlay = false; livePrebuffer.stop(); connectionTimeout.stop(); }
