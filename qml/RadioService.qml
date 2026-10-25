@@ -23,6 +23,8 @@ Item {
   property bool bassdriveFresh: false
   property alias library: libraryManager
   property real pendingSeek: 0
+  property real progressPosition: 0
+  property real progressMs: 0
   readonly property bool prebuffering: livePrebuffer.running
   property int livePrebufferMs: Qt.platform.os === "osx" ? (stream.macPrebufferMs || 0) : 0
   readonly property var recordings: libraryManager.latest
@@ -158,6 +160,15 @@ Item {
     pendingSeek = resume ? libraryManager.resumePosition(next) : 0;
     play();
   }
+  // Qt's FFmpeg backend reports LoadedMedia after any seek and stays BufferingMedia until four seconds
+  // are queued, which a live stream may never reach, so advancing audio also proves playback started.
+  function trackProgress() {
+    var delta = player.position - progressPosition;
+    progressPosition = player.position;
+    if (!connectionTimeout.running || !playing || pendingSeek > 0 || delta <= 0 || delta > 2000) { progressMs = 0; return; }
+    progressMs += delta;
+    if (progressMs >= 1000) connectionTimeout.stop();
+  }
   function applyResume() {
     if (pendingSeek > 0 && wantsPlay && playing && player.mediaStatus === MediaPlayer.BufferedMedia && player.seekable && player.duration > 0) {
       player.position = Math.min(pendingSeek, Math.max(0, player.duration - 1000));
@@ -266,6 +277,7 @@ Item {
     audioOutput: output
     onSeekableChanged: root.applyResume()
     onDurationChanged: root.applyResume()
+    onPositionChanged: root.trackProgress()
     onMediaStatusChanged: {
       root.applyResume();
       if (mediaStatus === MediaPlayer.EndOfMedia && !root.playbackError) { libraryManager.rememberPosition(); root.wantsPlay = false; livePrebuffer.stop(); connectionTimeout.stop(); }
