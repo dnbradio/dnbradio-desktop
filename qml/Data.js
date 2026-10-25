@@ -33,12 +33,19 @@ function profileRef(value) {
 function songLinks(song) {
   if (!song) return [];
   var links = [], seen = {};
-  function add(value, label) {
+  function add(value, label, kind) {
     var url = webUrl(value);
-    if (!url || seen[url]) return;
-    seen[url] = true;
+    if (!url) return;
+    if (seen[url] !== undefined) {
+      if (kind === "label") {
+        links[seen[url]].label = plain(label);
+        links[seen[url]].kind = "label";
+      }
+      return;
+    }
+    seen[url] = links.length;
     var host = url.replace(/^https?:\/\//i, "").split("/")[0].toLowerCase();
-    links.push({url: url, label: /(^|\.)bandcamp\.com$/.test(host) ? "Bandcamp" : /(^|\.)beatport\.com$/.test(host) ? "Beatport" : plain(label || "Track website")});
+    links.push({url: url, kind: kind || "track", label: kind === "label" || kind === "release" ? plain(label) : /(^|\.)bandcamp\.com$/.test(host) ? "Bandcamp" : /(^|\.)beatport\.com$/.test(host) ? "Beatport" : plain(label || "Track website")});
   }
   [song, song.custom_fields || {}].forEach(function(fields) {
     ["purchase_url", "buy_url", "bandcamp_url", "bandcamp", "website", "url"].forEach(function(key) {
@@ -46,6 +53,12 @@ function songLinks(song) {
     });
   });
   if (Array.isArray(song.links)) song.links.forEach(function(link) { add(link.url, link.label); });
+  var enrichment = song.label_metadata || {};
+  var hasExplicitLinks = links.length > 0;
+  if (!hasExplicitLinks && enrichment.status === "resolved" && Array.isArray(enrichment.release_links))
+    enrichment.release_links.forEach(function(link) { add(link.url, "Buy release", "release"); });
+  if (enrichment.status === "resolved" && Array.isArray(enrichment.label_links))
+    enrichment.label_links.forEach(function(link) { add(link.url, link.label || "Label website", "label"); });
   return links;
 }
 function relativeTime(timestamp, now) {

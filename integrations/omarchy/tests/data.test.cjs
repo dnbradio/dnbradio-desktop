@@ -55,3 +55,28 @@ test('mix artwork fallback survives library serialization and rejects local path
   assert.equal(data.recording({id: 42, profile_image: 'file:///secret'}).profile_image, '');
   assert.equal(data.recording({id: 42}).profile_image, '');
 });
+
+test('label accounts are clearly marked and explicit purchase links precede mapped releases', () => {
+  const enrichment = {status: 'resolved', label_links: [{url: 'https://plush.bandcamp.com', label: 'Label: Plush Recordings'}],
+    release_links: [{url: 'https://plush.bandcamp.com/album/verified'}]};
+  let links = data.songLinks({buy_url: 'https://artist.bandcamp.com/track/original', label_metadata: enrichment});
+  assert.equal(links.length, 2);
+  assert.equal(links[0].url, 'https://artist.bandcamp.com/track/original');
+  assert.equal(links[1].label, 'Label: Plush Recordings');
+  assert.equal(links[1].kind, 'label');
+  links = data.songLinks({label_metadata: enrichment});
+  assert.equal(links[0].label, 'Buy release');
+  assert.equal(links[0].kind, 'release');
+  assert.equal(data.songLinks({label_metadata: {...enrichment, status: 'conflict'}}).length, 0);
+  assert.equal(data.songLinks({label_metadata: {status: 'resolved', label_links: [{url: 'javascript:bad'}]}}).length, 0);
+});
+
+test('a verified label account relabels a duplicate explicit URL without moving it', () => {
+  const links = data.songLinks({bandcamp_url: 'https://plush.bandcamp.com', buy_url: 'https://store.test/track',
+    label_metadata: {status: 'resolved', label_links: [{url: 'https://plush.bandcamp.com', label: 'Label: Plush Recordings'}]}});
+  assert.equal(links.length, 2);
+  assert.equal(links[0].url, 'https://store.test/track');
+  assert.equal(links[1].url, 'https://plush.bandcamp.com');
+  assert.equal(links[1].label, 'Label: Plush Recordings');
+  assert.equal(links[1].kind, 'label');
+});

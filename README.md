@@ -100,7 +100,7 @@ The application uses public DNBRADIO, AzuraCast, JungleTrain, Bassdrive, and art
 
 ## Optional Omarchy integration
 
-The Omarchy 0.4.0 plugin is retained from the tested original implementation. Assemble it with the shared data and scrolling files:
+The Omarchy plugin, version 0.5.0, is assembled with the shared data and scrolling files:
 
 ```sh
 python3 scripts/package-omarchy.py build/omarchy

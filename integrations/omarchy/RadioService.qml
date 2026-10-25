@@ -164,7 +164,7 @@ Item {
     metadataBusy = true;
     var request = new XMLHttpRequest();
     metadataRequest = request;
-    request.open("GET", Quickshell.env("DNBRADIO_NOWPLAYING_URL") || "https://azura.drmnbss.org/api/nowplaying");
+    request.open("GET", Quickshell.env("DNBRADIO_NOWPLAYING_URL") || "https://dnbradio.com/api/nowplaying");
     request.onreadystatechange = function() {
       if (request.readyState !== XMLHttpRequest.DONE) return;
       metadataTimeout.stop();
