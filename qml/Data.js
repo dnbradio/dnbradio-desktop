@@ -54,8 +54,8 @@ function songLinks(song) {
   });
   if (Array.isArray(song.links)) song.links.forEach(function(link) { add(link.url, link.label); });
   var enrichment = song.label_metadata || {};
-  // Explicit links keep precedence over mapped release destinations.
-  if (links.length === 0 && enrichment.status === "resolved" && Array.isArray(enrichment.release_links))
+  var hasExplicitLinks = links.length > 0;
+  if (!hasExplicitLinks && enrichment.status === "resolved" && Array.isArray(enrichment.release_links))
     enrichment.release_links.forEach(function(link) { add(link.url, "Buy release", "release"); });
   if (enrichment.status === "resolved" && Array.isArray(enrichment.label_links))
     enrichment.label_links.forEach(function(link) { add(link.url, link.label || "Label website", "label"); });
