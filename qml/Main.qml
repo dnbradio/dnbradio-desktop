@@ -123,7 +123,7 @@ Controls.ApplicationWindow {
         Layout.fillWidth: true; spacing: 4
         Label { Layout.fillWidth: true; text: row.mix.title; font.bold: true; maximumLineCount: 2; elide: Text.ElideRight }
         Label { Layout.fillWidth: true; text: row.mix.artist + (row.mix.genre ? " · " + row.mix.genre : ""); font.pixelSize: Style.font.caption; opacity: 0.7; maximumLineCount: 1; elide: Text.ElideRight }
-        Label { Layout.fillWidth: true; text: root.day(row.mix.date) + (row.resumeAt > 0 ? " · Resume at " + Catalog.time(row.resumeAt) : " · " + row.mix.plays + " plays"); font.pixelSize: Style.font.caption; opacity: 0.55 }
+        Label { Layout.fillWidth: true; text: root.day(row.mix.date) + (row.resumeAt > 0 ? " · Resume at " + Catalog.time(row.resumeAt) : " · " + row.mix.plays.toLocaleString(Qt.locale(), "f", 0) + " plays"); font.pixelSize: Style.font.caption; opacity: 0.55 }
         Flow {
           Layout.fillWidth: true; spacing: 6
           Action { text: row.resumeAt > 0 ? "Resume" : "Play"; bordered: true; onClicked: root.radio.playMix(row.mix, true) }
@@ -324,7 +324,7 @@ Controls.ApplicationWindow {
               Layout.fillWidth: true; spacing: 8
               Action { text: details.mix.profile ? "@" + details.mix.profile.slug + " · View DJ profile" : details.mix.artist || ""; enabled: !!details.mix.profile; onClicked: root.library.showProfile(details.mix.profile) }
               Label { text: details.mix.title || ""; font.bold: true; font.pixelSize: 23; Layout.fillWidth: true }
-              Label { text: (details.mix.genre || "Drum & bass") + " · " + root.day(details.mix.date) + " · " + details.mix.plays + " plays"; opacity: 0.6; Layout.fillWidth: true; font.pixelSize: Style.font.caption }
+              Label { text: (details.mix.genre || "Drum & bass") + " · " + root.day(details.mix.date) + " · " + details.mix.plays.toLocaleString(Qt.locale(), "f", 0) + " plays"; opacity: 0.6; Layout.fillWidth: true; font.pixelSize: Style.font.caption }
               RowLayout {
                 Action { text: root.library.resumePosition(details.mix) > 0 ? "Resume · " + Catalog.time(root.library.resumePosition(details.mix)) : "Play mix"; bordered: true; selected: true; onClicked: root.radio.playMix(details.mix, true) }
                 Action { visible: root.library.resumePosition(details.mix) > 0; text: "From start"; onClicked: root.radio.playMix(details.mix, false) }
@@ -427,7 +427,7 @@ Controls.ApplicationWindow {
               Label { Layout.fillWidth: true; text: profileView.dj.name || profileView.dj.slug || "DJ profile"; font.pixelSize: 26; font.bold: true }
               Label { text: "@" + (profileView.dj.slug || ""); color: Color.accent }
               Label { Layout.fillWidth: true; text: [profileView.dj.location, profileView.dj.member_since ? "Member since " + profileView.dj.member_since : ""].filter(Boolean).join(" · "); opacity: 0.6; font.pixelSize: Style.font.caption }
-              Label { visible: !!profileView.dj.stats; text: profileView.dj.stats ? Number(profileView.dj.stats.mixes).toLocaleString() + " mixes · " + Number(profileView.dj.stats.plays).toLocaleString() + " plays" : ""; font.bold: true }
+              Label { visible: !!profileView.dj.stats; text: profileView.dj.stats ? Number(profileView.dj.stats.mixes).toLocaleString(Qt.locale(), "f", 0) + " mixes · " + Number(profileView.dj.stats.plays).toLocaleString(Qt.locale(), "f", 0) + " plays" : ""; font.bold: true }
               Label { Layout.fillWidth: true; visible: !!profileView.dj.next_show; text: profileView.dj.next_show ? "Next show · " + root.date(profileView.dj.next_show.start) : ""; color: Color.accent; font.pixelSize: Style.font.caption }
             }
           }
