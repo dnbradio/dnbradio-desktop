@@ -72,7 +72,9 @@ Main {
                 case 6: case 8: case 10:
                     if (!hasText("Original jungle")) return;
                     check(library.selectedProfile.slug === "djfk", "contributor profile action");
-                    check(library.selectedProfile.stats.plays === 12345, "DJ stats");
+                    check(library.selectedProfile.stats.plays === 1231500, "DJ stats");
+                    check(hasText("986 mixes · 1,231,500 plays"),
+                          "DJ play count uses grouped whole numbers, never scientific notation");
                     if (app.stage < 10) library.open("contributors");
                     else library.fetchProfileMixes(2);
                     advance(); break;

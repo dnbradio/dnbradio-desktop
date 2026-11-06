@@ -78,7 +78,7 @@ class Handler(BaseHTTPRequestHandler):
                         capabilities=[] if legacy else ["search", "genre", "sort", "detail", "dj"])
         elif url.path == "/api/profiles/djfk" and not legacy:
             data = dict(data=dict(slug="djfk", name="DJFK", bio="Original jungle", image=mix["profile_image"],
-                                  location="London", member_since="2020-02", stats=dict(mixes=50, plays=12345),
+                                  location="London", member_since="2020-02", stats=dict(mixes=986, plays=1231500),
                                   links=[dict(label="SoundCloud", url="https://soundcloud.com/djfk")]))
         elif url.path == "/nowplaying":
             song = dict(title="Current tune", artist="Test artist", art=mix["profile_image"], custom_fields=dict(bandcamp_url="https://example.bandcamp.com/track/test"))

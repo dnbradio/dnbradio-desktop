@@ -40,7 +40,7 @@ Rectangle {
     Text {
       Layout.fillWidth: true; textFormat: Text.PlainText; color: Color.foreground; opacity: 0.6
       font.family: Style.font.family; font.pixelSize: Style.font.caption
-      text: root.mix.plays.toLocaleString() + " plays · " + Qt.formatDateTime(new Date(root.mix.date), "MMM d, yyyy")
+      text: root.mix.plays.toLocaleString(Qt.locale(), "f", 0) + " plays · " + Qt.formatDateTime(new Date(root.mix.date), "MMM d, yyyy")
       elide: Text.ElideRight
     }
     RowLayout {
