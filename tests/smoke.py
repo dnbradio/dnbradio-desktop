@@ -19,7 +19,8 @@ fixture.mix["image"] = base + "/missing.svg"
 threading.Thread(target=server.serve_forever, daemon=True).start()
 try:
     with tempfile.TemporaryDirectory(prefix="dnbradio-smoke-") as state:
-        env = dict(os.environ, DNBRADIO_DATA_DIR=state, DNBRADIO_API_BASE=base,
+        env = dict(os.environ, LC_ALL="en_US.UTF-8", LANG="en_US.UTF-8",
+                   DNBRADIO_DATA_DIR=state, DNBRADIO_API_BASE=base,
                    DNBRADIO_NOWPLAYING_URL=base + "/nowplaying", DNBRADIO_BASSDRIVE_URL=base + "/bassdrive")
         env.setdefault("QT_QPA_PLATFORM", "cocoa" if sys.platform == "darwin" else "offscreen")
         result = subprocess.run([sys.argv[1], "--test-qml", str(Path(__file__).with_name("smoke.qml"))],

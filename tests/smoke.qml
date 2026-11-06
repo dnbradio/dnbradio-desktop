@@ -73,8 +73,7 @@ Main {
                     if (!hasText("Original jungle")) return;
                     check(library.selectedProfile.slug === "djfk", "contributor profile action");
                     check(library.selectedProfile.stats.plays === 1231500, "DJ stats");
-                    var separator = Qt.locale().groupSeparator;
-                    check(hasText("986 mixes · 1" + separator + "231" + separator + "500 plays"),
+                    check(hasText("986 mixes · 1,231,500 plays"),
                           "DJ play count uses grouped whole numbers, never scientific notation");
                     if (app.stage < 10) library.open("contributors");
                     else library.fetchProfileMixes(2);
